@@ -6,6 +6,7 @@
     "appUrl": "./",
     "collaborative": false,
     "exposeAppInBrowser": true,
+    "defaultKernelName": "python",
     "settingsOverrides": {
       "@jupyterlab/apputils-extension:themes": {
         "theme": "JupyterLab Light"
@@ -16,6 +17,9 @@
           "autoClosingBrackets": true,
           "lineNumbers": true
         }
+      },
+      "@jupyterlab/notebook-extension:panel": {
+        "kernelShutdown": false
       }
     }
   },
