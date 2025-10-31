@@ -1,0 +1,11 @@
+# Paquetes para incluir en JupyterLite
+# Estos estarán disponibles en el navegador
+
+# Paquetes científicos básicos (compatibles con Pyodide)
+numpy
+matplotlib
+pandas
+
+# Para instalación local (desarrollo)
+jupyterlite-core>=0.2.0
+jupyterlab>=4.0.0

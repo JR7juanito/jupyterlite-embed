@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Demo Funcionando - JupyterLite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.95);
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        .success-badge {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 0 auto 30px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .demo-card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .demo-card p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        iframe {
+            width: 100%;
+            border: 3px solid #667eea;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .instructions {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .instructions li {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .code-snippet {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ ¡JupyterLite Funcionando!</h1>
+        <p class="subtitle">Notebooks Python 100% en tu navegador - Sin instalación, sin servidor</p>
+        
+        <div class="center">
+            <div class="success-badge">
+                🎉 DEMO EN VIVO - Listo para usar
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>🚀 ¿Qué estás viendo?</h3>
+            <p>
+                Abajo verás consolas Python reales funcionando <strong>completamente en tu navegador</strong>. 
+                Estos embeds usan URLs públicas de JupyterLite, así que funcionan inmediatamente sin necesidad 
+                de desplegar nada.
+            </p>
+            
+            <h3>💡 Cómo interactuar:</h3>
+            <ul>
+                <li><strong>Escribe código Python</strong> en la consola (por ejemplo: <code>print("Hola")</code>)</li>
+                <li><strong>Presiona Shift + Enter</strong> para ejecutar</li>
+                <li><strong>Prueba operaciones:</strong> <code>2 + 2</code>, <code>import random; random.randint(1,10)</code></li>
+                <li><strong>El código se ejecuta en tu navegador</strong> usando WebAssembly (Pyodide)</li>
+            </ul>
+
+            <div class="highlight">
+                <strong>🎯 Próximo paso:</strong> Copia el código de cualquier iframe y úsalo en tu sitio web, 
+                CodePen, JSFiddle, o cualquier plataforma HTML. ¡Funciona en todas partes!
+            </div>
+        </div>
+
+        <div class="demo-grid">
+            <!-- Demo 1: REPL -->
+            <div class="demo-card">
+                <h2>💻 Consola Python (REPL)</h2>
+                <p>
+                    Una consola Python simple y ligera. Perfecta para tutoriales rápidos y ejemplos de código.
+                    Escribe <code>help()</code> para ver ayuda de Python.
+                </p>
+                <iframe 
+                    src="https://jupyterlite.github.io/demo/repl/index.html?kernel=python&toolbar=1"
+                    height="500px"
+                    frameborder="0"
+                    allowfullscreen
+                ></iframe>
+                
+                <div class="code-snippet">
+&lt;iframe 
+  src="https://jupyterlite.github.io/demo/repl/index.html?kernel=python&toolbar=1"
+  width="100%"
+  height="500px"
+&gt;&lt;/iframe&gt;
+                </div>
+            </div>
+
+            <!-- Demo 2: JupyterLab -->
+            <div class="demo-card">
+                <h2>🧪 JupyterLab Completo</h2>
+                <p>
+                    La experiencia completa de JupyterLab. Crea notebooks, ejecuta código, y explora archivos.
+                    Haz doble clic en cualquier notebook del panel izquierdo para abrirlo.
+                </p>
+                <iframe 
+                    src="https://jupyterlite.github.io/demo/lab/index.html"
+                    height="600px"
+                    frameborder="0"
+                    allowfullscreen
+                ></iframe>
+                
+                <div class="code-snippet">
+&lt;iframe 
+  src="https://jupyterlite.github.io/demo/lab/index.html"
+  width="100%"
+  height="600px"
+&gt;&lt;/iframe&gt;
+                </div>
+            </div>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="instructions">
+            <h3>🎨 Personalización</h3>
+            <p>Puedes personalizar los embeds con parámetros URL:</p>
+            <ul>
+                <li><code>?toolbar=1</code> - Mostrar barra de herramientas</li>
+                <li><code>?toolbar=0</code> - Ocultar barra de herramientas</li>
+                <li><code>?kernel=python</code> - Seleccionar kernel automáticamente</li>
+                <li><code>?theme=JupyterLab%20Dark</code> - Tema oscuro</li>
+                <li><code>?theme=JupyterLab%20Light</code> - Tema claro</li>
+            </ul>
+
+            <p><strong>Ejemplo con múltiples parámetros:</strong></p>
+            <div class="code-snippet">
+https://jupyterlite.github.io/demo/repl/index.html?kernel=python&toolbar=1&theme=JupyterLab%20Dark
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📱 Plataformas donde puedes usar estos embeds</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div style="padding: 15px; background: #f0f0f0; border-radius: 8px;">
+                    <strong>🎨 CodePen</strong><br>
+                    <small>Pruebas rápidas de código</small>
+                </div>
+                <div style="padding: 15px; background: #f0f0f0; border-radius: 8px;">
+                    <strong>📝 JSFiddle</strong><br>
+                    <small>Compartir snippets</small>
+                </div>
+                <div style="padding: 15px; background: #f0f0f0; border-radius: 8px;">
+                    <strong>📚 Blogs</strong><br>
+                    <small>WordPress, Blogger, etc.</small>
+                </div>
+                <div style="padding: 15px; background: #f0f0f0; border-radius: 8px;">
+                    <strong>📖 Documentación</strong><br>
+                    <small>GitHub Pages, ReadTheDocs</small>
+                </div>
+                <div style="padding: 15px; background: #f0f0f0; border-radius: 8px;">
+                    <strong>🎓 Educación</strong><br>
+                    <small>Plataformas LMS</small>
+                </div>
+                <div style="padding: 15px; background: #f0f0f0; border-radius: 8px;">
+                    <strong>💼 Portfolios</strong><br>
+                    <small>Tu sitio personal</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>🚀 ¿Quieres tu propia versión?</h3>
+            <p>
+                Los embeds de arriba usan URLs públicas de JupyterLite. Si quieres desplegar tu propia versión 
+                con notebooks personalizados:
+            </p>
+            <ol style="margin-left: 20px; line-height: 1.8;">
+                <li>Sube el proyecto a GitHub</li>
+                <li>Activa GitHub Pages con GitHub Actions</li>
+                <li>En 2-5 minutos tendrás tu URL: <code>https://tuusuario.github.io/tu-repo/</code></li>
+                <li>Usa esa URL en tus embeds para mostrar tus notebooks personalizados</li>
+            </ol>
+            
+            <p style="margin-top: 15px;">
+                <strong>📖 Ver instrucciones completas en:</strong>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li><code>README.md</code> - Documentación completa</li>
+                    <li><code>INICIO-RAPIDO.md</code> - Guía de inicio rápido</li>
+                    <li><code>GUIA-TESTERS.md</code> - Cómo probar en testers online</li>
+                </ul>
+            </p>
+        </div>
+
+        <div class="center" style="margin-top: 30px;">
+            <div style="background: rgba(255,255,255,0.95); border-radius: 12px; padding: 30px; display: inline-block;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">📚 Recursos del Proyecto</h3>
+                <div style="text-align: left;">
+                    <p>✅ <strong>2 Notebooks interactivos</strong> listos en <code>/content/</code></p>
+                    <p>✅ <strong>embed-tester.html</strong> - Tester interactivo de embeds</p>
+                    <p>✅ <strong>embed-examples.html</strong> - Códigos para copiar</p>
+                    <p>✅ <strong>GitHub Actions</strong> configurado para auto-deploy</p>
+                    <p>✅ <strong>3 guías markdown</strong> con instrucciones completas</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Mensaje de bienvenida en consola
+        console.log('%c🚀 JupyterLite Demo Funcionando!', 'font-size: 20px; color: #667eea; font-weight: bold;');
+        console.log('%cEste proyecto incluye:', 'font-size: 14px; color: #666;');
+        console.log('✅ Notebooks interactivos en español');
+        console.log('✅ Embeds listos para copiar y pegar');
+        console.log('✅ Deploy automático a GitHub Pages');
+        console.log('✅ Tester interactivo de embeds');
+        console.log('\n📖 Revisa README.md para más información');
+    </script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplos de Embed - JupyterLite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+
+        .info-box {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .info-box h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .embed-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .embed-section h2 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .embed-section h2 .icon {
+            font-size: 1.5em;
+        }
+
+        .embed-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 0.9em;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+
+        .copy-btn:active {
+            background: #4451b8;
+        }
+
+        .iframe-container {
+            background: #fafafa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 15px;
+            min-height: 500px;
+        }
+
+        iframe {
+            width: 100%;
+            border: none;
+            border-radius: 6px;
+        }
+
+        .url-placeholder {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .url-placeholder strong {
+            color: #856404;
+        }
+
+        .url-placeholder code {
+            background: #ffe8a1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .tab:hover {
+            background: #e0e0e0;
+        }
+
+        .tab.active {
+            background: white;
+            border-color: #667eea;
+            border-bottom: 2px solid white;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+            }
+            
+            .embed-section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 JupyterLite Embed - Ejemplos</h1>
+        <p class="subtitle">Copia y pega estos códigos para embeber Jupyter en tu sitio web</p>
+
+        <div class="info-box">
+            <h2>📋 Instrucciones de Uso</h2>
+            <ul>
+                <li>Cada ejemplo muestra un iframe diferente de JupyterLite</li>
+                <li>Haz clic en "Copiar Código" para copiar el iframe al portapapeles</li>
+                <li>Pega en tu HTML, blog, o documentación</li>
+                <li>Reemplaza <code>&lt;TU-URL&gt;</code> con tu URL real de despliegue</li>
+                <li>Prueba en CodePen, JSFiddle, o tu sitio web</li>
+            </ul>
+        </div>
+
+        <!-- Opción 1: REPL -->
+        <div class="embed-section">
+            <h2><span class="icon">💻</span> Opción 1: Consola Python Interactiva (REPL)</h2>
+            <p class="embed-description">
+                Una consola Python simple y ligera. Perfecta para documentación o tutoriales rápidos.
+                Los usuarios pueden escribir y ejecutar código Python directamente.
+            </p>
+            
+            <div class="url-placeholder">
+                <strong>⚠️ Reemplaza esto:</strong> 
+                <code>&lt;TU-URL&gt;</code> por tu URL de GitHub Pages, Vercel, o Netlify<br>
+                Ejemplo: <code>https://tuusuario.github.io/jupyterlite-embed</code>
+            </div>
+
+            <div class="code-block" id="code-repl">
+&lt;!-- Consola Python REPL --&gt;
+&lt;iframe 
+  src="&lt;TU-URL&gt;/repl/index.html?kernel=python&toolbar=1"
+  width="100%"
+  height="500px"
+  frameborder="0"
+  allowfullscreen
+&gt;&lt;/iframe&gt;
+            </div>
+            <button class="copy-btn" onclick="copyCode('code-repl')">📋 Copiar Código</button>
+
+            <div class="iframe-container">
+                <p style="text-align: center; padding: 20px; color: #666;">
+                    ⬆️ Aquí aparecerá la consola Python una vez despliegues tu JupyterLite
+                </p>
+            </div>
+        </div>
+
+        <!-- Opción 2: Notebook Específico -->
+        <div class="embed-section">
+            <h2><span class="icon">📓</span> Opción 2: Notebook Específico</h2>
+            <p class="embed-description">
+                Abre directamente el notebook de bienvenida. Ideal para tutoriales o demos específicas.
+            </p>
+
+            <div class="code-block" id="code-notebook">
+&lt;!-- Notebook Específico --&gt;
+&lt;iframe 
+  src="&lt;TU-URL&gt;/lab/index.html?path=bienvenida-interactiva.ipynb"
+  width="100%"
+  height="700px"
+  frameborder="0"
+  allowfullscreen
+&gt;&lt;/iframe&gt;
+            </div>
+            <button class="copy-btn" onclick="copyCode('code-notebook')">📋 Copiar Código</button>
+
+            <div class="iframe-container">
+                <p style="text-align: center; padding: 20px; color: #666;">
+                    ⬆️ Aquí se abrirá el notebook interactivo con todos los ejemplos
+                </p>
+            </div>
+        </div>
+
+        <!-- Opción 3: JupyterLab Completo -->
+        <div class="embed-section">
+            <h2><span class="icon">🧪</span> Opción 3: JupyterLab Completo</h2>
+            <p class="embed-description">
+                La experiencia completa de JupyterLab en el navegador. Los usuarios pueden crear notebooks,
+                explorar archivos, y más. Mejor para experiencias inmersivas.
+            </p>
+
+            <div class="code-block" id="code-lab">
+&lt;!-- JupyterLab Completo --&gt;
+&lt;iframe 
+  src="&lt;TU-URL&gt;/lab/index.html"
+  width="100%"
+  height="800px"
+  frameborder="0"
+  allowfullscreen
+&gt;&lt;/iframe&gt;
+            </div>
+            <button class="copy-btn" onclick="copyCode('code-lab')">📋 Copiar Código</button>
+
+            <div class="iframe-container">
+                <p style="text-align: center; padding: 20px; color: #666;">
+                    ⬆️ Aquí aparecerá la interfaz completa de JupyterLab
+                </p>
+            </div>
+        </div>
+
+        <!-- Opción 4: Notebook Clásico -->
+        <div class="embed-section">
+            <h2><span class="icon">📒</span> Opción 4: Interfaz Notebook Clásica</h2>
+            <p class="embed-description">
+                La interfaz clásica de Jupyter Notebook. Más simple que JupyterLab, 
+                enfocada solo en el notebook.
+            </p>
+
+            <div class="code-block" id="code-classic">
+&lt;!-- Jupyter Notebook Clásico --&gt;
+&lt;iframe 
+  src="&lt;TU-URL&gt;/notebooks/index.html?path=bienvenida-interactiva.ipynb"
+  width="100%"
+  height="700px"
+  frameborder="0"
+  allowfullscreen
+&gt;&lt;/iframe&gt;
+            </div>
+            <button class="copy-btn" onclick="copyCode('code-classic')">📋 Copiar Código</button>
+
+            <div class="iframe-container">
+                <p style="text-align: center; padding: 20px; color: #666;">
+                    ⬆️ Aquí se mostrará la interfaz clásica del notebook
+                </p>
+            </div>
+        </div>
+
+        <!-- Parámetros Personalizables -->
+        <div class="embed-section">
+            <h2><span class="icon">⚙️</span> Parámetros URL Personalizables</h2>
+            <p class="embed-description">
+                Agrega estos parámetros a la URL para personalizar el comportamiento:
+            </p>
+
+            <div class="code-block">
+# Abrir notebook específico
+?path=nombre-notebook.ipynb
+
+# Seleccionar kernel automáticamente
+?kernel=python
+
+# Mostrar/ocultar toolbar
+?toolbar=1   (mostrar)
+?toolbar=0   (ocultar)
+
+# Cambiar tema
+?theme=JupyterLab%20Dark
+?theme=JupyterLab%20Light
+
+# Combinar múltiples parámetros
+?kernel=python&toolbar=1&theme=JupyterLab%20Light
+            </div>
+
+            <p class="embed-description" style="margin-top: 20px;">
+                <strong>Ejemplo completo:</strong>
+            </p>
+
+            <div class="code-block" id="code-custom">
+&lt;iframe 
+  src="&lt;TU-URL&gt;/repl/index.html?kernel=python&toolbar=1&theme=JupyterLab%20Light"
+  width="100%"
+  height="600px"
+  frameborder="0"
+&gt;&lt;/iframe&gt;
+            </div>
+            <button class="copy-btn" onclick="copyCode('code-custom')">📋 Copiar Código</button>
+        </div>
+
+        <!-- URLs de Demo -->
+        <div class="info-box">
+            <h2>🌐 URLs de Ejemplo para Probar</h2>
+            <p style="margin-bottom: 15px; color: #666;">
+                Puedes usar estas URLs públicas para probar mientras despliegas la tuya:
+            </p>
+            <ul>
+                <li><strong>Demo oficial:</strong> <code>https://jupyterlite.github.io/demo</code></li>
+                <li><strong>Try Jupyter:</strong> <code>https://jupyter.org/try-jupyter/lab</code></li>
+                <li><strong>REPLite:</strong> <code>https://replite.vercel.app</code></li>
+            </ul>
+            <p style="margin-top: 15px; color: #856404; background: #fff3cd; padding: 10px; border-radius: 6px;">
+                <strong>💡 Tip:</strong> Una vez que despliegues tu JupyterLite, reemplaza estas URLs 
+                con la tuya para usar tus notebooks personalizados.
+            </p>
+        </div>
+
+        <!-- Plataformas para Probar -->
+        <div class="info-box">
+            <h2>🧪 Plataformas para Probar tus Embeds</h2>
+            <ul>
+                <li><strong>CodePen:</strong> <a href="https://codepen.io/" target="_blank">codepen.io</a> - Editor online HTML/CSS/JS</li>
+                <li><strong>JSFiddle:</strong> <a href="https://jsfiddle.net/" target="_blank">jsfiddle.net</a> - Prueba código rápidamente</li>
+                <li><strong>HTML Preview:</strong> <a href="https://htmlpreview.github.io/" target="_blank">htmlpreview.github.io</a> - Preview de HTML en GitHub</li>
+                <li><strong>Glitch:</strong> <a href="https://glitch.com/" target="_blank">glitch.com</a> - Crea apps web rápidamente</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        function copyCode(elementId) {
+            const codeBlock = document.getElementById(elementId);
+            const text = codeBlock.textContent.trim();
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // Mostrar feedback
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✅ ¡Copiado!';
+                button.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '#667eea';
+                }, 2000);
+            }).catch(err => {
+                alert('Error al copiar. Por favor, copia manualmente.');
+                console.error('Error:', err);
+            });
+        }
+
+        // Efectos de scroll suave
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('.embed-section, .info-box');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = 'opacity 0.5s, transform 0.5s';
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>

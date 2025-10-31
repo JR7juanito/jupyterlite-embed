@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Embed Tester - Prueba JupyterLite en Vivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .controls {
+            background: #16213e;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .control-group select,
+        .control-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: #0f3460;
+            color: white;
+            font-size: 1em;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .control-group input[type="range"] {
+            cursor: pointer;
+        }
+
+        .control-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .secondary-btn {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+
+        .info-btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .preview-container {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            margin-bottom: 25px;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .preview-header h2 {
+            color: #667eea;
+            margin: 0;
+        }
+
+        .status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .status.ready {
+            background: #27ae60;
+            color: white;
+        }
+
+        .status.loading {
+            background: #f39c12;
+            color: white;
+        }
+
+        .iframe-wrapper {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            min-height: 600px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            display: block;
+        }
+
+        .code-display {
+            background: #0f3460;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            position: relative;
+        }
+
+        .code-display pre {
+            color: #f8f8f2;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .copy-code-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 16px;
+            min-width: auto;
+        }
+
+        .info-panel {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .info-panel h3 {
+            margin-bottom: 10px;
+        }
+
+        .info-panel ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-panel li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .info-panel li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 52, 96, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .demo-sites {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .demo-card {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .demo-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .demo-card.active {
+            border-color: #27ae60;
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.2) 0%, rgba(39, 174, 96, 0.2) 100%);
+        }
+
+        .demo-card h4 {
+            margin-bottom: 5px;
+            color: #667eea;
+        }
+
+        .demo-card p {
+            font-size: 0.85em;
+            color: #aaa;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .control-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 JupyterLite Embed Tester</h1>
+        <p>Prueba diferentes opciones de embed en tiempo real</p>
+    </div>
+
+    <div class="info-panel">
+        <h3>📌 ¿Cómo usar este tester?</h3>
+        <ul>
+            <li>Selecciona un tipo de embed (REPL, Notebook, JupyterLab)</li>
+            <li>Elige una URL de demo o pega tu propia URL</li>
+            <li>Ajusta las opciones de visualización</li>
+            <li>Haz clic en "Cargar Preview" para ver el resultado</li>
+            <li>Copia el código generado para usarlo en tu sitio</li>
+        </ul>
+    </div>
+
+    <div class="controls">
+        <h2 style="margin-bottom: 20px; color: #667eea;">⚙️ Configuración del Embed</h2>
+        
+        <div class="control-row">
+            <div class="control-group">
+                <label>📝 Tipo de Embed:</label>
+                <select id="embedType">
+                    <option value="repl">💻 REPL - Consola Python</option>
+                    <option value="notebook">📓 Notebook Específico</option>
+                    <option value="lab">🧪 JupyterLab Completo</option>
+                    <option value="classic">📒 Notebook Clásico</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>🌐 URL Base:</label>
+                <input type="text" id="baseUrl" placeholder="https://tupagina.github.io/jupyterlite">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>📏 Altura del iframe: <span id="heightValue">600px</span></label>
+            <input type="range" id="height" min="400" max="1000" value="600" step="50">
+        </div>
+
+        <div class="control-group">
+            <label>🎨 Opciones adicionales:</label>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 10px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="showToolbar" checked>
+                    <span>Mostrar barra de herramientas</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="darkTheme">
+                    <span>Tema oscuro</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="allowFullscreen" checked>
+                    <span>Permitir pantalla completa</span>
+                </label>
+            </div>
+        </div>
+
+        <h3 style="margin: 25px 0 15px 0; color: #667eea;">🚀 URLs de Demo Públicas</h3>
+        <div class="demo-sites" id="demoSites">
+            <div class="demo-card" data-url="https://jupyterlite.github.io/demo">
+                <h4>🏠 Demo Oficial</h4>
+                <p>JupyterLite oficial</p>
+            </div>
+            <div class="demo-card" data-url="https://jupyter.org/try-jupyter">
+                <h4>🔬 Try Jupyter</h4>
+                <p>Página oficial de Jupyter</p>
+            </div>
+            <div class="demo-card" data-url="https://replite.vercel.app">
+                <h4>⚡ REPLite</h4>
+                <p>REPL optimizado</p>
+            </div>
+            <div class="demo-card" data-url="">
+                <h4>✏️ Personalizado</h4>
+                <p>Usa tu propia URL</p>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button onclick="loadPreview()">🔄 Cargar Preview</button>
+            <button class="secondary-btn" onclick="copyGeneratedCode()">📋 Copiar Código</button>
+            <button class="info-btn" onclick="openInNewTab()">🔗 Abrir en Pestaña Nueva</button>
+        </div>
+    </div>
+
+    <div class="preview-container">
+        <div class="preview-header">
+            <h2>👀 Vista Previa en Vivo</h2>
+            <span class="status ready" id="status">✅ Listo</span>
+        </div>
+
+        <div class="iframe-wrapper" id="iframeWrapper">
+            <div class="loading-overlay" style="display: none;" id="loadingOverlay">
+                <div class="spinner"></div>
+                <p style="margin-top: 20px; font-size: 1.1em;">Cargando JupyterLite...</p>
+            </div>
+            <iframe id="previewFrame" src=""></iframe>
+        </div>
+
+        <div class="code-display">
+            <button class="copy-code-btn" onclick="copyGeneratedCode()">📋 Copiar</button>
+            <pre id="generatedCode">&lt;!-- Configura las opciones arriba y haz clic en "Cargar Preview" --&gt;</pre>
+        </div>
+    </div>
+
+    <script>
+        // Estado
+        let currentUrl = '';
+
+        // Elementos
+        const embedType = document.getElementById('embedType');
+        const baseUrl = document.getElementById('baseUrl');
+        const height = document.getElementById('height');
+        const heightValue = document.getElementById('heightValue');
+        const showToolbar = document.getElementById('showToolbar');
+        const darkTheme = document.getElementById('darkTheme');
+        const allowFullscreen = document.getElementById('allowFullscreen');
+        const previewFrame = document.getElementById('previewFrame');
+        const generatedCode = document.getElementById('generatedCode');
+        const status = document.getElementById('status');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const demoCards = document.querySelectorAll('.demo-card');
+
+        // Event listeners
+        height.addEventListener('input', () => {
+            heightValue.textContent = height.value + 'px';
+        });
+
+        demoCards.forEach(card => {
+            card.addEventListener('click', () => {
+                demoCards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                const url = card.dataset.url;
+                if (url) {
+                    baseUrl.value = url;
+                    baseUrl.disabled = true;
+                } else {
+                    baseUrl.disabled = false;
+                    baseUrl.focus();
+                }
+            });
+        });
+
+        // Seleccionar primera demo por defecto
+        demoCards[0].click();
+
+        function generateUrl() {
+            const base = baseUrl.value.trim();
+            if (!base) {
+                alert('⚠️ Por favor ingresa una URL base');
+                return null;
+            }
+
+            const type = embedType.value;
+            const toolbar = showToolbar.checked ? 'toolbar=1' : 'toolbar=0';
+            const theme = darkTheme.checked ? 'theme=JupyterLab%20Dark' : 'theme=JupyterLab%20Light';
+            
+            let url = '';
+            let params = [];
+
+            switch(type) {
+                case 'repl':
+                    url = `${base}/repl/index.html`;
+                    params.push('kernel=python', toolbar, theme);
+                    break;
+                case 'notebook':
+                    url = `${base}/lab/index.html`;
+                    params.push('path=bienvenida-interactiva.ipynb');
+                    break;
+                case 'lab':
+                    url = `${base}/lab/index.html`;
+                    break;
+                case 'classic':
+                    url = `${base}/notebooks/index.html`;
+                    params.push('path=bienvenida-interactiva.ipynb');
+                    break;
+            }
+
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+
+            return url;
+        }
+
+        function generateCode(url) {
+            const h = height.value;
+            const fullscreen = allowFullscreen.checked ? '\n  allowfullscreen' : '';
+            
+            return `<!-- JupyterLite Embed -->
+<iframe 
+  src="${url}"
+  width="100%"
+  height="${h}px"
+  frameborder="0"${fullscreen}
+></iframe>`;
+        }
+
+        function loadPreview() {
+            const url = generateUrl();
+            if (!url) return;
+
+            currentUrl = url;
+
+            // Mostrar loading
+            status.className = 'status loading';
+            status.textContent = '⏳ Cargando...';
+            loadingOverlay.style.display = 'flex';
+
+            // Cargar iframe
+            previewFrame.src = url;
+            previewFrame.style.height = height.value + 'px';
+
+            // Generar código
+            const code = generateCode(url);
+            generatedCode.textContent = code;
+
+            // Simular carga completa después de 2 segundos
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+                status.className = 'status ready';
+                status.textContent = '✅ Cargado';
+            }, 2000);
+        }
+
+        function copyGeneratedCode() {
+            const code = generatedCode.textContent;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ ¡Copiado!';
+                btn.style.background = 'linear-gradient(135deg, #27ae60 0%, #229954 100%)';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                }, 2000);
+            }).catch(err => {
+                alert('Error al copiar. Por favor, copia manualmente.');
+            });
+        }
+
+        function openInNewTab() {
+            if (currentUrl) {
+                window.open(currentUrl, '_blank');
+            } else {
+                alert('⚠️ Primero carga el preview haciendo clic en "Cargar Preview"');
+            }
+        }
+
+        // Cargar preview inicial automáticamente
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loadPreview();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
