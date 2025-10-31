@@ -25,7 +25,7 @@
   },
   "jupyter-lite": {
     "litePluginSettings": {
-      "@jupyterlite/pyolite-kernel-extension:kernel": {
+      "@jupyterlite/pyodide-kernel-extension:kernel": {
         "pipliteUrls": ["https://pypi.org/pypi/{package_name}/json"],
         "pipliteWheelUrl": "https://files.pythonhosted.org/packages/{path}"
       }

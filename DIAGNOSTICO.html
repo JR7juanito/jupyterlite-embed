@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Diagnóstico JupyterLite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .test-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .test-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .test-url {
+            font-family: 'Courier New', monospace;
+            background: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            word-break: break-all;
+            font-size: 0.9em;
+            border: 1px solid #ddd;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            margin: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .results {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .test-all {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .test-all button {
+            font-size: 1.2em;
+            padding: 15px 40px;
+        }
+        
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.85em;
+        }
+        
+        .icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        
+        .summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .summary h2 {
+            margin-bottom: 15px;
+        }
+        
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            padding: 10px 20px;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnóstico JupyterLite</h1>
+        <p class="subtitle">Verificación automática de tu despliegue en GitHub Pages</p>
+        
+        <div class="test-all">
+            <button onclick="runAllTests()" style="font-size: 1.3em; padding: 15px 50px;">
+                🚀 EJECUTAR TODOS LOS TESTS
+            </button>
+        </div>
+        
+        <!-- Test 1: Página principal -->
+        <div class="test-section" id="test1">
+            <div class="test-title"><span class="icon">🏠</span>Test 1: Página Principal</div>
+            <div class="test-url">https://jr7juanito.github.io/jupyterlite-embed/</div>
+            <button onclick="testURL('test1', 'https://jr7juanito.github.io/jupyterlite-embed/', 'JupyterLite')">
+                Probar
+            </button>
+            <button onclick="window.open('https://jr7juanito.github.io/jupyterlite-embed/', '_blank')">
+                Abrir en nueva pestaña
+            </button>
+            <div id="test1-result"></div>
+        </div>
+        
+        <!-- Test 2: JupyterLab -->
+        <div class="test-section" id="test2">
+            <div class="test-title"><span class="icon">🔬</span>Test 2: JupyterLab</div>
+            <div class="test-url">https://jr7juanito.github.io/jupyterlite-embed/lab/index.html</div>
+            <button onclick="testURL('test2', 'https://jr7juanito.github.io/jupyterlite-embed/lab/index.html', 'JupyterLab')">
+                Probar
+            </button>
+            <button onclick="window.open('https://jr7juanito.github.io/jupyterlite-embed/lab/index.html', '_blank')">
+                Abrir en nueva pestaña
+            </button>
+            <div id="test2-result"></div>
+        </div>
+        
+        <!-- Test 3: Notebook Bienvenida -->
+        <div class="test-section" id="test3">
+            <div class="test-title"><span class="icon">📓</span>Test 3: Notebook Bienvenida</div>
+            <div class="test-url">https://jr7juanito.github.io/jupyterlite-embed/lab/index.html?path=bienvenida-interactiva.ipynb</div>
+            <button onclick="testURL('test3', 'https://jr7juanito.github.io/jupyterlite-embed/lab/index.html?path=bienvenida-interactiva.ipynb', 'bienvenida')">
+                Probar
+            </button>
+            <button onclick="window.open('https://jr7juanito.github.io/jupyterlite-embed/lab/index.html?path=bienvenida-interactiva.ipynb', '_blank')">
+                Abrir en nueva pestaña
+            </button>
+            <div id="test3-result"></div>
+        </div>
+        
+        <!-- Test 4: Notebook Playground -->
+        <div class="test-section" id="test4">
+            <div class="test-title"><span class="icon">🎮</span>Test 4: Notebook Playground</div>
+            <div class="test-url">https://jr7juanito.github.io/jupyterlite-embed/lab/index.html?path=playground-interactivo.ipynb</div>
+            <button onclick="testURL('test4', 'https://jr7juanito.github.io/jupyterlite-embed/lab/index.html?path=playground-interactivo.ipynb', 'playground')">
+                Probar
+            </button>
+            <button onclick="window.open('https://jr7juanito.github.io/jupyterlite-embed/lab/index.html?path=playground-interactivo.ipynb', '_blank')">
+                Abrir en nueva pestaña
+            </button>
+            <div id="test4-result"></div>
+        </div>
+        
+        <!-- Test 5: REPL -->
+        <div class="test-section" id="test5">
+            <div class="test-title"><span class="icon">💻</span>Test 5: REPL Console</div>
+            <div class="test-url">https://jr7juanito.github.io/jupyterlite-embed/repl/index.html</div>
+            <button onclick="testURL('test5', 'https://jr7juanito.github.io/jupyterlite-embed/repl/index.html', 'Console')">
+                Probar
+            </button>
+            <button onclick="window.open('https://jr7juanito.github.io/jupyterlite-embed/repl/index.html', '_blank')">
+                Abrir en nueva pestaña
+            </button>
+            <div id="test5-result"></div>
+        </div>
+        
+        <!-- Test 6: Archivos estáticos -->
+        <div class="test-section" id="test6">
+            <div class="test-title"><span class="icon">📁</span>Test 6: Archivos Estáticos</div>
+            <div class="test-url">https://jr7juanito.github.io/jupyterlite-embed/files/</div>
+            <button onclick="testURL('test6', 'https://jr7juanito.github.io/jupyterlite-embed/files/', 'Index of')">
+                Probar
+            </button>
+            <button onclick="window.open('https://jr7juanito.github.io/jupyterlite-embed/files/', '_blank')">
+                Abrir en nueva pestaña
+            </button>
+            <div id="test6-result"></div>
+        </div>
+        
+        <div class="summary" id="summary" style="display: none;">
+            <h2>📊 Resumen de Tests</h2>
+            <div class="summary-stats">
+                <div class="stat">
+                    <div class="stat-number" id="total-tests">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="passed-tests">0</div>
+                    <div class="stat-label">Exitosos ✅</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="failed-tests">0</div>
+                    <div class="stat-label">Fallidos ❌</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0
+        };
+        
+        async function testURL(testId, url, expectedContent) {
+            const resultDiv = document.getElementById(`${testId}-result`);
+            resultDiv.innerHTML = '<div class="status loading">⏳ Probando...</div>';
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                
+                // Con no-cors no podemos leer la respuesta, así que intentamos un fetch normal
+                const fullResponse = await fetch(url);
+                const text = await fullResponse.text();
+                
+                if (fullResponse.ok) {
+                    const hasExpectedContent = expectedContent ? text.includes(expectedContent) : true;
+                    
+                    if (hasExpectedContent) {
+                        resultDiv.innerHTML = `
+                            <div class="status success">
+                                ✅ ÉXITO - URL accesible
+                            </div>
+                            <div class="results">
+                                <strong>Status:</strong> ${fullResponse.status} ${fullResponse.statusText}<br>
+                                <strong>Content-Type:</strong> ${fullResponse.headers.get('content-type')}<br>
+                                <strong>Tamaño:</strong> ${text.length} bytes<br>
+                                ${expectedContent ? `<strong>Contenido esperado encontrado:</strong> "${expectedContent}" ✅` : ''}
+                            </div>
+                        `;
+                        testResults.passed++;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="status error">
+                                ⚠️ ADVERTENCIA - URL accesible pero contenido inesperado
+                            </div>
+                            <div class="results">
+                                <strong>Status:</strong> ${fullResponse.status}<br>
+                                <strong>Contenido esperado no encontrado:</strong> "${expectedContent}"<br>
+                                <details>
+                                    <summary>Ver primeros 500 caracteres</summary>
+                                    <pre>${text.substring(0, 500)}</pre>
+                                </details>
+                            </div>
+                        `;
+                        testResults.failed++;
+                    }
+                } else {
+                    throw new Error(`HTTP ${fullResponse.status}`);
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ ERROR - No se pudo acceder a la URL
+                    </div>
+                    <div class="results">
+                        <strong>Error:</strong> ${error.message}<br>
+                        <strong>Posibles causas:</strong>
+                        <ul>
+                            <li>El sitio aún no está desplegado (espera 2-3 minutos después del commit)</li>
+                            <li>Problema con CORS (Cross-Origin Resource Sharing)</li>
+                            <li>GitHub Pages no está activado correctamente</li>
+                            <li>La ruta del archivo no existe</li>
+                        </ul>
+                        <strong>Solución:</strong> Abre la URL en una nueva pestaña para verificar manualmente.
+                    </div>
+                `;
+                testResults.failed++;
+            }
+            
+            testResults.total++;
+            updateSummary();
+        }
+        
+        async function runAllTests() {
+            testResults = { total: 0, passed: 0, failed: 0 };
+            
+            await testURL('test1', 'https://jr7juanito.github.io/jupyterlite-embed/', 'JupyterLite');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testURL('test2', 'https://jr7juanito.github.io/jupyterlite-embed/lab/index.html', 'JupyterLab');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testURL('test3', 'https://jr7juanito.github.io/jupyterlite-embed/lab/index.html?path=bienvenida-interactiva.ipynb', 'bienvenida');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testURL('test4', 'https://jr7juanito.github.io/jupyterlite-embed/lab/index.html?path=playground-interactivo.ipynb', 'playground');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testURL('test5', 'https://jr7juanito.github.io/jupyterlite-embed/repl/index.html', 'Console');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testURL('test6', 'https://jr7juanito.github.io/jupyterlite-embed/files/', 'Index of');
+            
+            document.getElementById('summary').style.display = 'block';
+            document.getElementById('summary').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function updateSummary() {
+            document.getElementById('total-tests').textContent = testResults.total;
+            document.getElementById('passed-tests').textContent = testResults.passed;
+            document.getElementById('failed-tests').textContent = testResults.failed;
+            
+            if (testResults.total > 0) {
+                document.getElementById('summary').style.display = 'block';
+            }
+        }
+        
+        // Mensaje inicial
+        console.log('🔍 Diagnóstico JupyterLite cargado');
+        console.log('📋 Haz clic en "EJECUTAR TODOS LOS TESTS" para comenzar');
+    </script>
+</body>
+</html>
