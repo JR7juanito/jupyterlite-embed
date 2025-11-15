@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📊 Statistical Computing - Interactive Demo</title>
+    <link rel="stylesheet" href="../../_shared/styles/scientific.css" />
+    <style>
+      /* Demo-specific styles */
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .stat-card {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.1),
+          rgba(124, 58, 237, 0.1)
+        );
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(37, 99, 235, 0.3);
+      }
+
+      .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #06b6d4;
+        font-family: var(--font-mono);
+      }
+
+      .stat-label {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+      <div class="loader"></div>
+      <div class="loading-text">Loading Python Environment...</div>
+      <div class="loading-progress" id="progress-text">0%</div>
+    </div>
+
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <h1>📊 Statistical Computing</h1>
+        <p>
+          Interactive statistical analysis powered by NumPy, SciPy, and Pandas
+          running entirely in your browser
+        </p>
+        <div style="margin-top: 1rem">
+          <span class="badge badge-success">Pyodide</span>
+          <span class="badge badge-success">NumPy</span>
+          <span class="badge badge-success">SciPy</span>
+          <span class="badge badge-success">Pandas</span>
+        </div>
+      </div>
+
+      <!-- Control Panel -->
+      <div class="control-panel">
+        <h2 style="color: #7c3aed; margin-bottom: 1rem">
+          Distribution Parameters
+        </h2>
+
+        <div class="grid">
+          <div class="control-group">
+            <label for="distribution">Distribution Type</label>
+            <select id="distribution">
+              <option value="normal">Normal (Gaussian)</option>
+              <option value="uniform">Uniform</option>
+              <option value="exponential">Exponential</option>
+              <option value="poisson">Poisson</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="sample-size"
+              >Sample Size: <span id="size-value">1000</span></label
+            >
+            <input
+              type="range"
+              id="sample-size"
+              min="100"
+              max="10000"
+              value="1000"
+              step="100"
+            />
+          </div>
+
+          <div class="control-group">
+            <label for="param1"
+              >Parameter 1 (μ/mean): <span id="param1-value">0</span></label
+            >
+            <input
+              type="range"
+              id="param1"
+              min="-10"
+              max="10"
+              value="0"
+              step="0.5"
+            />
+          </div>
+
+          <div class="control-group">
+            <label for="param2"
+              >Parameter 2 (σ/std): <span id="param2-value">1</span></label
+            >
+            <input
+              type="range"
+              id="param2"
+              min="0.1"
+              max="5"
+              value="1"
+              step="0.1"
+            />
+          </div>
+        </div>
+
+        <button
+          class="btn"
+          id="generate-btn"
+          style="width: 100%; margin-top: 1rem"
+        >
+          🎲 Generate & Analyze
+        </button>
+      </div>
+
+      <!-- Statistics Display -->
+      <div class="output-area">
+        <h2>📈 Statistical Results</h2>
+        <div class="stat-grid" id="stats-display">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-mean">--</div>
+            <div class="stat-label">Mean (μ)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-std">--</div>
+            <div class="stat-label">Std Dev (σ)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-median">--</div>
+            <div class="stat-label">Median</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-var">--</div>
+            <div class="stat-label">Variance</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-skew">--</div>
+            <div class="stat-label">Skewness</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-kurt">--</div>
+            <div class="stat-label">Kurtosis</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Histogram Plot -->
+      <div class="output-area">
+        <h2>📊 Distribution Histogram</h2>
+        <div class="plot-container" id="plot-container">
+          <p style="text-align: center; color: #94a3b8; padding: 2rem">
+            Click "Generate & Analyze" to see the histogram
+          </p>
+        </div>
+      </div>
+
+      <!-- Sample Data Preview -->
+      <div class="output-area">
+        <h2>🔍 Sample Data Preview (First 20 values)</h2>
+        <div class="results" id="sample-data">
+          <pre>No data generated yet</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load Pyodide from CDN -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+
+    <!-- Load App Logic -->
+    <script src="main.js"></script>
+  </body>
+</html>

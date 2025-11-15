@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TEST 2: P5.js + Slider</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.js"></script>
+</head>
+<body>
+    <h1>TEST 2: P5.js + addEventListener</h1>
+    <input type="range" id="test" min="0" max="100" value="50">
+    <span id="value">50</span>
+    <div id="canvas-container"></div>
+    
+    <script>
+        let testValue = 50;
+        
+        function setup() {
+            let canvas = createCanvas(400, 200);
+            canvas.parent('canvas-container');
+            
+            console.log('TEST 2: Conectando slider EN SETUP...');
+            document.getElementById('test').addEventListener('input', (e) => {
+                testValue = parseFloat(e.target.value);
+                console.log('Evento disparado:', testValue);
+                document.getElementById('value').textContent = testValue;
+            });
+        }
+        
+        function draw() {
+            background(200);
+            fill(0);
+            textSize(32);
+            text(testValue, 20, 100);
+        }
+    </script>
+</body>
+</html>

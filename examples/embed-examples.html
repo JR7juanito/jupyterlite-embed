@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplos de Integración - AI Chatbot</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        
+        .example {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .example h2 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        
+        .example-description {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .code-block code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        /* Ejemplo 1: Chat fijo */
+        #fixed-chat {
+            width: 100%;
+            height: 600px;
+            border: 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Ejemplo 2: Chat flotante */
+        #floating-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        #floating-chat {
+            width: 380px;
+            height: 600px;
+            border: 0;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        
+        /* Ejemplo 3: Chat con botón */
+        #chat-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: transform 0.2s;
+            z-index: 9998;
+        }
+        
+        #chat-toggle-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        #chat-toggle-btn:active {
+            transform: scale(0.95);
+        }
+        
+        #toggle-chat-container {
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        #toggle-chat-container.active {
+            display: block;
+        }
+        
+        #toggle-chat {
+            width: 380px;
+            height: 600px;
+            border: 0;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            #floating-chat,
+            #toggle-chat {
+                width: 340px;
+                height: 500px;
+            }
+            
+            #floating-container,
+            #toggle-chat-container {
+                right: 10px;
+                bottom: 10px;
+            }
+            
+            #chat-toggle-btn {
+                right: 10px;
+                bottom: 10px;
+                padding: 0.75rem 1.25rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 Ejemplos de Integración del Chatbot</h1>
+    <p class="subtitle">Diferentes formas de integrar el chatbot en tu sitio web</p>
+
+    <!-- Ejemplo 1: Chat Embebido Fijo -->
+    <div class="example">
+        <h2>1. Chat Embebido Fijo</h2>
+        <p class="example-description">
+            Un chat que ocupa todo el ancho disponible, ideal para páginas dedicadas de soporte.
+        </p>
+        
+        <div class="code-block">
+            <code>&lt;iframe<br>
+  src="http://localhost:5173"<br>
+  width="100%"<br>
+  height="600"<br>
+  style="border:0; border-radius: 8px;"<br>
+  title="AI Assistant Chat"<br>
+&gt;&lt;/iframe&gt;</code>
+        </div>
+        
+        <iframe 
+            id="fixed-chat"
+            src="http://localhost:5173"
+            title="AI Assistant Chat"
+        ></iframe>
+    </div>
+
+    <!-- Ejemplo 2: Chat Flotante -->
+    <div class="example">
+        <h2>2. Chat Flotante (Esquina Inferior Derecha)</h2>
+        <p class="example-description">
+            Un chat que permanece visible en la esquina mientras el usuario navega por la página.
+        </p>
+        
+        <div class="code-block">
+            <code>&lt;div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;"&gt;<br>
+  &lt;iframe<br>
+    src="http://localhost:5173"<br>
+    width="380"<br>
+    height="600"<br>
+    style="border:0; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);"<br>
+  &gt;&lt;/iframe&gt;<br>
+&lt;/div&gt;</code>
+        </div>
+        
+        <p><strong>👉 Mira la esquina inferior derecha de esta página para ver este ejemplo en acción.</strong></p>
+    </div>
+
+    <!-- Ejemplo 3: Chat con Botón Toggle -->
+    <div class="example">
+        <h2>3. Chat con Botón de Abrir/Cerrar</h2>
+        <p class="example-description">
+            El chat aparece solo cuando el usuario hace clic en un botón, ahorrando espacio en pantalla.
+        </p>
+        
+        <div class="code-block">
+            <code>&lt;!-- Botón --&gt;<br>
+&lt;button id="openChat" style="position: fixed; bottom: 20px; right: 20px; z-index: 9998;"&gt;<br>
+  💬 Chat con IA<br>
+&lt;/button&gt;<br>
+<br>
+&lt;!-- Contenedor del iframe --&gt;<br>
+&lt;div id="chatContainer" style="display: none; position: fixed; bottom: 90px; right: 20px; z-index: 9999;"&gt;<br>
+  &lt;iframe src="http://localhost:5173" width="380" height="600"&gt;&lt;/iframe&gt;<br>
+&lt;/div&gt;<br>
+<br>
+&lt;script&gt;<br>
+  document.getElementById('openChat').addEventListener('click', function() {<br>
+    const container = document.getElementById('chatContainer');<br>
+    container.style.display = container.style.display === 'none' ? 'block' : 'none';<br>
+    this.textContent = container.style.display === 'none' ? '💬 Chat con IA' : '❌ Cerrar';<br>
+  });<br>
+&lt;/script&gt;</code>
+        </div>
+        
+        <p><strong>👉 Este ejemplo también está activo en esta página. Haz clic en el botón para probarlo.</strong></p>
+    </div>
+
+    <!-- Ejemplo 4: Chat en Modal/Overlay -->
+    <div class="example">
+        <h2>4. Recomendaciones Adicionales</h2>
+        
+        <h3>Personalizar el dominio</h3>
+        <p>Una vez deployado en Vercel, reemplaza <code>http://localhost:5173</code> por tu dominio:</p>
+        <div class="code-block">
+            <code>src="https://tu-dominio.vercel.app"</code>
+        </div>
+        
+        <h3>Agregar loading spinner</h3>
+        <p>Puedes mostrar un spinner mientras carga el iframe:</p>
+        <div class="code-block">
+            <code>&lt;div id="loading"&gt;Cargando chat...&lt;/div&gt;<br>
+&lt;iframe onload="document.getElementById('loading').style.display='none'" ...&gt;&lt;/iframe&gt;</code>
+        </div>
+        
+        <h3>Comunicación entre iframe y página padre</h3>
+        <p>Para casos avanzados, puedes usar <code>postMessage</code> para comunicar el iframe con tu página.</p>
+    </div>
+
+    <!-- Chat Flotante en la Esquina (Ejemplo 2) -->
+    <div id="floating-container">
+        <iframe 
+            id="floating-chat"
+            src="http://localhost:5173"
+            title="AI Assistant Chat Flotante"
+        ></iframe>
+    </div>
+
+    <!-- Chat con Botón Toggle (Ejemplo 3) -->
+    <button id="chat-toggle-btn">💬 Chat con IA</button>
+    <div id="toggle-chat-container">
+        <iframe 
+            id="toggle-chat"
+            src="http://localhost:5173"
+            title="AI Assistant Chat Toggle"
+        ></iframe>
+    </div>
+
+    <script>
+        // Funcionalidad del botón toggle
+        const toggleBtn = document.getElementById('chat-toggle-btn');
+        const toggleContainer = document.getElementById('toggle-chat-container');
+        
+        toggleBtn.addEventListener('click', function() {
+            toggleContainer.classList.toggle('active');
+            this.textContent = toggleContainer.classList.contains('active') ? '❌ Cerrar' : '💬 Chat con IA';
+        });
+
+        // Cerrar al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            if (!toggleContainer.contains(event.target) && event.target !== toggleBtn) {
+                if (toggleContainer.classList.contains('active')) {
+                    toggleContainer.classList.remove('active');
+                    toggleBtn.textContent = '💬 Chat con IA';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

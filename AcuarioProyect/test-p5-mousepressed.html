@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TEST 4: P5.js + mousePressed()</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.js"></script>
+</head>
+<body>
+    <h1>TEST 4: P5.js + mousePressed() - ¿Bloquea eventos?</h1>
+    <input type="range" id="test" min="0" max="100" value="50">
+    <span id="value">50</span>
+    <div id="canvas-container"></div>
+    
+    <script>
+        let params = {
+            testValue: 50
+        };
+        
+        let clicks = 0;
+        
+        function connectSliders() {
+            console.log('TEST 4: connectSliders() con mousePressed()');
+            document.getElementById('test').addEventListener('input', (e) => {
+                params.testValue = parseFloat(e.target.value);
+                console.log('Slider evento:', params.testValue);
+                document.getElementById('value').textContent = params.testValue;
+            });
+        }
+        
+        function setup() {
+            let canvas = createCanvas(400, 200);
+            canvas.parent('canvas-container');
+            connectSliders();
+        }
+        
+        function draw() {
+            background(200);
+            fill(0);
+            textSize(20);
+            text('Value: ' + params.testValue, 20, 60);
+            text('Clicks: ' + clicks, 20, 100);
+        }
+        
+        function mousePressed() {
+            console.log('mousePressed disparado');
+            clicks++;
+        }
+    </script>
+</body>
+</html>
