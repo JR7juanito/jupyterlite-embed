@@ -1,0 +1,30 @@
+{
+  "name": "openai-assistant-chatbot",
+  "version": "1.0.0",
+  "description": "Chatbot embebible usando OpenAI Assistants API + Superinterface",
+  "type": "module",
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd server && npm run dev",
+    "dev": "concurrently --kill-others \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd server && npm run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "preview": "cd frontend && npm run preview",
+    "install:all": "npm install && cd frontend && npm install && cd ../server && npm install && cd ../api && npm install",
+    "postinstall": "echo '✅ Instalación completa. Ejecuta: cp .env.example .env && configura tus variables de entorno'"
+  },
+  "keywords": [
+    "openai",
+    "chatbot",
+    "assistants-api",
+    "superinterface",
+    "react",
+    "embed"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

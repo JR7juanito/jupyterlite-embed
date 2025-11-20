@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TEST 3: P5.js + Función separada</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.js"></script>
+</head>
+<body>
+    <h1>TEST 3: P5.js + connectSliders() como en tu código</h1>
+    <input type="range" id="test" min="0" max="100" value="50">
+    <span id="value">50</span>
+    <div id="canvas-container"></div>
+    
+    <script>
+        let params = {
+            testValue: 50
+        };
+        
+        function connectSliders() {
+            console.log('TEST 3: connectSliders() llamada');
+            document.getElementById('test').addEventListener('input', (e) => {
+                params.testValue = parseFloat(e.target.value);
+                console.log('Evento disparado:', params.testValue);
+                document.getElementById('value').textContent = params.testValue;
+            });
+        }
+        
+        function setup() {
+            let canvas = createCanvas(400, 200);
+            canvas.parent('canvas-container');
+            
+            connectSliders();
+        }
+        
+        function draw() {
+            background(200);
+            fill(0);
+            textSize(32);
+            text(params.testValue, 20, 100);
+        }
+    </script>
+</body>
+</html>

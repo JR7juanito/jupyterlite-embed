@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔬 Interactive Scientist Hub</title>
+    <link rel="stylesheet" href="hub.css" />
+  </head>
+  <body>
+    <!-- Cyberpunk Grid Background -->
+    <div class="grid-bg"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">⚛️</div>
+        <h1>SCIENTIST<span class="highlight">HUB</span></h1>
+        <div class="subtitle">Interactive Python Lab</div>
+      </div>
+
+      <nav class="nav-menu">
+        <div class="nav-section">
+          <div class="section-title">⚡ CORE LABS</div>
+          <a href="#statistical" class="nav-item active" data-lab="statistical">
+            <span class="icon">📊</span>
+            <span class="text">Statistical Computing</span>
+            <span class="badge">ACTIVE</span>
+          </a>
+          <a href="#mathematical" class="nav-item" data-lab="mathematical">
+            <span class="icon">🔢</span>
+            <span class="text">Mathematical Analysis</span>
+            <span class="badge coming-soon">SOON</span>
+          </a>
+          <a href="#signal" class="nav-item" data-lab="signal">
+            <span class="icon">🎵</span>
+            <span class="text">Signal Processing</span>
+            <span class="badge coming-soon">SOON</span>
+          </a>
+          <a href="#visualization" class="nav-item" data-lab="visualization">
+            <span class="icon">📈</span>
+            <span class="text">Data Visualization</span>
+            <span class="badge coming-soon">SOON</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="section-title">🚀 ADVANCED LABS</div>
+          <a href="#ml" class="nav-item" data-lab="ml">
+            <span class="icon">🤖</span>
+            <span class="text">Machine Learning</span>
+            <span class="badge locked">🔒</span>
+          </a>
+          <a href="#quantum" class="nav-item" data-lab="quantum">
+            <span class="icon">⚛️</span>
+            <span class="text">Quantum Computing</span>
+            <span class="badge locked">🔒</span>
+          </a>
+          <a href="#image" class="nav-item" data-lab="image">
+            <span class="icon">🖼️</span>
+            <span class="text">Image Processing</span>
+            <span class="badge locked">🔒</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="status-indicator">
+          <div class="pulse"></div>
+          <span id="python-status">Python Ready</span>
+        </div>
+        <div class="version">Pyodide v0.26.4 | NumPy | SciPy</div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="breadcrumb">
+          <span class="crumb">Labs</span>
+          <span class="separator">/</span>
+          <span class="crumb active" id="current-lab"
+            >Statistical Computing</span
+          >
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" id="theme-toggle" title="Toggle Theme">
+            <span>🌙</span>
+          </button>
+          <button class="icon-btn" id="fullscreen-btn" title="Fullscreen">
+            <span>⛶</span>
+          </button>
+          <button class="icon-btn" id="share-btn" title="Share">
+            <span>🔗</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Loading Overlay -->
+      <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+          <div class="cyber-loader">
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+            <div class="loader-core">🐍</div>
+          </div>
+          <div class="loading-text">INITIALIZING PYTHON ENVIRONMENT</div>
+          <div class="loading-progress" id="progress-text">0%</div>
+          <div class="loading-bar">
+            <div class="loading-fill" id="progress-bar"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lab Container -->
+      <div class="lab-container" id="statistical-lab">
+        <!-- Hero Section -->
+        <section class="hero-section">
+          <div class="hero-content">
+            <h2 class="lab-title">
+              <span class="title-icon">📊</span>
+              Statistical Computing Lab
+            </h2>
+            <p class="lab-description">
+              Generate and analyze probability distributions using NumPy and
+              SciPy. Visualize statistical properties in real-time with
+              interactive controls.
+            </p>
+            <div class="hero-stats">
+              <div class="stat-chip">
+                <span class="stat-label">Distributions</span>
+                <span class="stat-value">4</span>
+              </div>
+              <div class="stat-chip">
+                <span class="stat-label">Metrics</span>
+                <span class="stat-value">6</span>
+              </div>
+              <div class="stat-chip">
+                <span class="stat-label">Samples/sec</span>
+                <span class="stat-value">10K+</span>
+              </div>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <canvas id="preview-canvas" width="300" height="200"></canvas>
+          </div>
+        </section>
+
+        <!-- Educational Info Panel -->
+        <div class="info-panel" id="distribution-info">
+          <div class="info-icon">💡</div>
+          <div class="info-content">
+            <h4 id="info-title">Normal Distribution (Gaussian)</h4>
+            <p id="info-description">
+              The normal distribution is the most common probability
+              distribution in nature. It's symmetric and bell-shaped. Examples:
+              human heights, test scores, measurement errors.
+              <strong>Parameters:</strong> Mean (μ) controls center, Standard
+              Deviation (σ) controls spread.
+            </p>
+          </div>
+        </div>
+
+        <!-- Control Panel -->
+        <section class="control-section">
+          <div class="section-header">
+            <h3>⚙️ Distribution Parameters</h3>
+            <button class="btn-secondary" id="random-btn">🎲 Randomize</button>
+          </div>
+
+          <div class="controls-grid">
+            <!-- Distribution Type -->
+            <div class="control-card">
+              <label class="control-label">
+                <span class="label-icon">📦</span>
+                Distribution Type
+              </label>
+              <select id="distribution" class="cyber-select">
+                <option value="normal">
+                  🔔 Normal (Gaussian) - Bell curve
+                </option>
+                <option value="uniform">📏 Uniform - Equal probability</option>
+                <option value="exponential">
+                  📉 Exponential - Decay pattern
+                </option>
+                <option value="poisson">🎲 Poisson - Event counting</option>
+              </select>
+              <div class="control-hint">
+                💡 Each distribution models different real-world phenomena
+              </div>
+            </div>
+
+            <!-- Sample Size -->
+            <div class="control-card">
+              <label class="control-label">
+                <span class="label-icon">🎯</span>
+                Sample Size:
+                <span class="value-display" id="size-value">1000</span>
+              </label>
+              <input
+                type="range"
+                id="sample-size"
+                class="cyber-slider"
+                min="100"
+                max="10000"
+                value="1000"
+                step="100"
+              />
+              <div class="slider-marks">
+                <span>100</span>
+                <span>5K</span>
+                <span>10K</span>
+              </div>
+              <div class="control-hint">
+                💡 More samples = smoother histogram & more accurate statistics
+              </div>
+            </div>
+
+            <!-- Parameter 1 -->
+            <div class="control-card">
+              <label class="control-label">
+                <span class="label-icon">μ</span>
+                Parameter 1 (Mean):
+                <span class="value-display" id="param1-value">0.0</span>
+              </label>
+              <input
+                type="range"
+                id="param1"
+                class="cyber-slider"
+                min="-10"
+                max="10"
+                value="0"
+                step="0.5"
+              />
+              <div class="slider-marks">
+                <span>-10</span>
+                <span>0</span>
+                <span>10</span>
+              </div>
+            </div>
+
+            <!-- Parameter 2 -->
+            <div class="control-card">
+              <label class="control-label">
+                <span class="label-icon">σ</span>
+                Parameter 2 (Std Dev):
+                <span class="value-display" id="param2-value">1.0</span>
+              </label>
+              <input
+                type="range"
+                id="param2"
+                class="cyber-slider"
+                min="0.1"
+                max="5"
+                value="1"
+                step="0.1"
+              />
+              <div class="slider-marks">
+                <span>0.1</span>
+                <span>2.5</span>
+                <span>5.0</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-primary" id="generate-btn">
+            <span class="btn-icon">⚡</span>
+            <span class="btn-text">GENERATE & ANALYZE</span>
+            <span class="btn-glow"></span>
+          </button>
+        </section>
+
+        <!-- Results Dashboard -->
+        <section class="results-section">
+          <div class="section-header">
+            <h3>📈 Statistical Results</h3>
+            <div class="result-actions">
+              <button class="icon-btn" title="Download Data">💾</button>
+              <button class="icon-btn" title="Copy Results">📋</button>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">μ</div>
+              <div class="stat-value" id="stat-mean">--</div>
+              <div class="stat-label">Mean</div>
+              <div class="stat-bar"><div class="bar-fill"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">σ</div>
+              <div class="stat-value" id="stat-std">--</div>
+              <div class="stat-label">Std Deviation</div>
+              <div class="stat-bar"><div class="bar-fill"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">M</div>
+              <div class="stat-value" id="stat-median">--</div>
+              <div class="stat-label">Median</div>
+              <div class="stat-bar"><div class="bar-fill"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">σ²</div>
+              <div class="stat-value" id="stat-var">--</div>
+              <div class="stat-label">Variance</div>
+              <div class="stat-bar"><div class="bar-fill"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">γ₁</div>
+              <div class="stat-value" id="stat-skew">--</div>
+              <div class="stat-label">Skewness</div>
+              <div class="stat-bar"><div class="bar-fill"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">γ₂</div>
+              <div class="stat-value" id="stat-kurt">--</div>
+              <div class="stat-label">Kurtosis</div>
+              <div class="stat-bar"><div class="bar-fill"></div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Histogram Visualization -->
+        <section class="viz-section">
+          <div class="section-header">
+            <h3>📊 Distribution Histogram</h3>
+            <div class="viz-controls">
+              <button class="icon-btn active" title="Bar Chart">📊</button>
+              <button class="icon-btn" title="Line Chart">📈</button>
+              <button class="icon-btn" title="Area Chart">📉</button>
+            </div>
+          </div>
+
+          <!-- Insights Panel (appears after generation) -->
+          <div class="insights-panel" id="insights-panel" style="display: none">
+            <div class="insight-header">
+              <span class="insight-icon">💡</span>
+              <span class="insight-title">Analysis Insights</span>
+            </div>
+            <div class="insight-content" id="insight-content">
+              <div class="insight-item" id="insight-shape">
+                <strong>Shape:</strong> <span id="shape-text">--</span>
+              </div>
+              <div class="insight-item" id="insight-spread">
+                <strong>Spread:</strong> <span id="spread-text">--</span>
+              </div>
+              <div class="insight-item" id="insight-tip">
+                <strong>Key Insight:</strong> <span id="tip-text">--</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-container" id="plot-container">
+            <div class="empty-state">
+              <div class="empty-icon">📊</div>
+              <p>Click "GENERATE & ANALYZE" to visualize distribution</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Data Preview -->
+        <section class="data-section">
+          <div class="section-header">
+            <h3>🔍 Sample Data Preview</h3>
+            <div class="data-info">
+              <span class="info-badge">First 20 values</span>
+            </div>
+          </div>
+          <div class="code-block" id="sample-data">
+            <pre><code>No data generated yet. Click the button above to start.</code></pre>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Floating Particles Effect -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+    <script src="hub.js"></script>
+  </body>
+</html>

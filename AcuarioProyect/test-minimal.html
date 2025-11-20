@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TEST 1: Solo Slider + addEventListener</title>
+</head>
+<body>
+    <h1>TEST 1: Slider básico con addEventListener</h1>
+    <input type="range" id="test" min="0" max="100" value="50">
+    <span id="value">50</span>
+    
+    <script>
+        console.log('TEST 1: Conectando slider...');
+        document.getElementById('test').addEventListener('input', (e) => {
+            console.log('Evento disparado:', e.target.value);
+            document.getElementById('value').textContent = e.target.value;
+        });
+    </script>
+</body>
+</html>
