@@ -1,4 +1,12 @@
 # Paquetes Python necesarios para los notebooks
 # Estos se instalarán en el entorno Pyodide (Python en WebAssembly)
+
+# Paquetes básicos
 numpy
 matplotlib
+
+# Para visualización y gráficos
+scipy
+
+# Para estructuras de datos
+pandas
