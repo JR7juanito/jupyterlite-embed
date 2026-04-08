@@ -10,6 +10,12 @@ Notebooks interactivos del curso de **Algoritmos y Estructuras de Datos** basado
 
 **[🌐 Abrir JupyterLite](https://jr7juanito.github.io/jupyterlite-embed/)**
 
+### 📊 MEGRÁFICA - Notebook Personalizado
+
+- **[Vista con encabezado](https://jr7juanito.github.io/jupyterlite-embed/MEGRAFICA.html)** - Interfaz simple con título
+- **[Vista ultra simple](https://jr7juanito.github.io/jupyterlite-embed/MEGRAFICA-simple.html)** - Solo el notebook
+- **[Vista retro clásica](https://jr7juanito.github.io/jupyterlite-embed/retro/notebooks/?path=MEGRAFICA.ipynb)** - Interfaz estilo Jupyter clásico
+
 ---
 
 ## 📚 Temario del Curso
