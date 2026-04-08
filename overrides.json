@@ -1,0 +1,24 @@
+{
+  "@jupyterlab/application-extension:sidebar": {
+    "visible": false
+  },
+  "@jupyterlab/apputils-extension:themes": {
+    "theme": "JupyterLab Dark"
+  },
+  "@jupyterlab/docmanager-extension:plugin": {
+    "autosave": false,
+    "autosaveInterval": 0
+  },
+  "@jupyterlab/filebrowser-extension:browser": {
+    "showFileCheckboxes": false,
+    "showHiddenFiles": false
+  },
+  "@jupyterlab/notebook-extension:tracker": {
+    "defaultCell": "code",
+    "autoStartDefaultKernel": true,
+    "kernelShutdown": false
+  },
+  "@jupyterlab/shortcuts-extension:shortcuts": {
+    "shortcuts": []
+  }
+}

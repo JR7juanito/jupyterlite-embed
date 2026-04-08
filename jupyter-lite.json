@@ -4,10 +4,36 @@
     "appName": "Algoritmos - Jupyter Notebook",
     "appVersion": "0.1.0",
     "collaborative": false,
-    "disabledExtensions": [],
+    "disabledExtensions": [
+      "@jupyterlab/apputils-extension:logo",
+      "@jupyterlab/filebrowser-extension:browser",
+      "@jupyterlab/filebrowser-extension:download",
+      "@jupyterlab/docmanager-extension:download",
+      "@jupyterlab/mainmenu-extension:logo"
+    ],
     "settingsOverrides": {
       "@jupyterlab/apputils-extension:themes": {
         "theme": "JupyterLab Dark"
+      },
+      "@jupyterlab/notebook-extension:tracker": {
+        "defaultCell": "code",
+        "autoStartDefaultKernel": true,
+        "kernelShutdown": false,
+        "recordTiming": false
+      },
+      "@jupyterlab/docmanager-extension:plugin": {
+        "autosave": false,
+        "autosaveInterval": 0
+      },
+      "@jupyterlab/application-extension:sidebar": {
+        "visible": false
+      },
+      "@jupyterlab/filebrowser-extension:widget": {
+        "showFileCheckboxes": false,
+        "showHiddenFiles": false
+      },
+      "@jupyterlab/shortcuts-extension:plugin": {
+        "disabled": []
       }
     }
   }
