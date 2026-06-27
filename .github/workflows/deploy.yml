@@ -33,6 +33,11 @@ jobs:
         run: |
           jupyter lite build --contents content --output-dir _output
 
+      - name: Include AcuarioProyect static app
+        run: |
+          mkdir -p _output/AcuarioProyect
+          cp -r AcuarioProyect/. _output/AcuarioProyect/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
