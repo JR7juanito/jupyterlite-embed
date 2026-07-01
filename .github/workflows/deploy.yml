@@ -30,7 +30,7 @@ jobs:
 
       - name: Build JupyterLite
         run: |
-          jupyter lite build --contents content --output-dir _output
+          jupyter lite build --ignore-sys-prefix --contents content --output-dir _output
 
       - name: Include AcuarioProyect static app
         run: |
