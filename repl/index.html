@@ -157,7 +157,18 @@
         stderr: (m) => log(m, "err")
       });
 
-      await pyodide.runPythonAsync("import math, random, statistics");
+        await pyodide.runPythonAsync(`
+    _DUO_GLOBALS = {"__name__": "__main__"}
+
+    def _duo_exec(code):
+      exec(code, _DUO_GLOBALS, _DUO_GLOBALS)
+
+    def _duo_reset():
+      _DUO_GLOBALS.clear()
+      _DUO_GLOBALS["__name__"] = "__main__"
+    `);
+
+        await pyodide.runPythonAsync("import math, random, statistics");
       status.textContent = "Listo";
       status.className = "status";
       log("[system] Runtime listo. Modulos base: math, random, statistics", "sys");
@@ -177,7 +188,9 @@
       log(">>> [bloque editor]", "sys");
 
       try {
-        const result = await pyodide.runPythonAsync(String(code));
+        pyodide.globals.set("__duo_code", String(code));
+        const result = await pyodide.runPythonAsync("_duo_exec(__duo_code)");
+        pyodide.globals.delete("__duo_code");
         if (result !== undefined && result !== null) {
           log(String(result));
         }
@@ -190,15 +203,26 @@
 
     async function runLine(line) {
       if (!line.trim()) return;
+      await ensureRuntime();
       log(">>> " + line, "sys");
 
       try {
-        const result = await pyodide.runPythonAsync(line);
+        pyodide.globals.set("__duo_code", line);
+        const result = await pyodide.runPythonAsync("_duo_exec(__duo_code)");
+        pyodide.globals.delete("__duo_code");
         if (result !== undefined && result !== null) {
           log(String(result));
         }
       } catch (e) {
         log(String(e), "err");
+          async function resetSession() {
+            await ensureRuntime();
+            await pyodide.runPythonAsync("_duo_reset()");
+            log("[system] Sesion reiniciada", "sys");
+            notifyParent({ type: "duo-reset-done" });
+            cmd.focus();
+          }
+
       }
     }
 
@@ -235,9 +259,7 @@
     resetBtn.addEventListener("click", async () => {
       out.textContent = "";
       log("[system] Reiniciando runtime...", "warn");
-      bootPromise = boot();
-      await bootPromise;
-      notifyParent({ type: "duo-reset-done" });
+      await resetSession();
     });
 
     window.addEventListener("message", async (event) => {
@@ -253,9 +275,7 @@
       } else if (data.type === "duo-reset") {
         out.textContent = "";
         log("[system] Reiniciando runtime...", "warn");
-        bootPromise = boot();
-        await bootPromise;
-        notifyParent({ type: "duo-reset-done" });
+        await resetSession();
       }
     });
 

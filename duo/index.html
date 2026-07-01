@@ -121,20 +121,6 @@
       min-height: 0;
     }
 
-    #output {
-      margin: 0;
-      border-top: 1px solid var(--line);
-      background: #0e172b;
-      color: #e9f1ff;
-      padding: 10px;
-      min-height: 130px;
-      max-height: 210px;
-      overflow: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font: 13px/1.4 Consolas, "Courier New", monospace;
-    }
-
     iframe {
       width: 100%;
       height: 100%;
@@ -199,6 +185,7 @@
     const bridgeOrigin = window.location.origin;
     let consoleReady = false;
     let monacoEditor = null;
+    const pendingMessages = [];
 
     const starterCode = `import math
 import random
@@ -240,10 +227,24 @@ print("random 1..10 =", random.randint(1, 10))`;
       });
     }
 
+    function flushPendingMessages() {
+      if (!consoleReady || !consoleFrame.contentWindow) return;
+
+      while (pendingMessages.length > 0) {
+        const msg = pendingMessages.shift();
+        consoleFrame.contentWindow.postMessage(msg, bridgeOrigin);
+      }
+    }
+
     function sendToConsole(message) {
       if (!consoleFrame.contentWindow) {
         status.textContent = "Consola no disponible";
         return false;
+      }
+
+      if (!consoleReady) {
+        pendingMessages.push(message);
+        return true;
       }
 
       consoleFrame.contentWindow.postMessage(message, bridgeOrigin);
@@ -271,6 +272,7 @@ print("random 1..10 =", random.randint(1, 10))`;
 
       if (data.type === "duo-ready") {
         consoleReady = true;
+        flushPendingMessages();
         status.textContent = "Consola conectada";
       } else if (data.type === "duo-exec-done") {
         status.textContent = data.ok ? "Ejecucion completada" : "Error en consola";
