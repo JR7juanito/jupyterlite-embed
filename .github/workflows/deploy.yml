@@ -38,6 +38,12 @@ jobs:
           mkdir -p _output/AcuarioProyect
           cp -r AcuarioProyect/. _output/AcuarioProyect/
 
+      - name: Include Duo Editor + Console app
+        run: |
+          mkdir -p _output/duo
+          cp -r duo/. _output/duo/
+          cp duo-embed-example.html _output/duo-embed-example.html
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

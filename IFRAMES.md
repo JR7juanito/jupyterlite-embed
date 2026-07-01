@@ -4,6 +4,21 @@ Todos los iframes usan la vista **Notebook Clásico** (sin barra lateral, pantal
 
 ---
 
+## 🧪 Duo Python Lab (Editor + Consola)
+
+Editor ejecutado con Pyodide + consola REPL de JupyterLite, ambos en paralelo.
+
+```html
+<iframe
+  src="https://jr7juanito.github.io/jupyterlite-embed/duo/"
+  width="100%"
+  height="860px"
+  frameborder="0">
+</iframe>
+```
+
+---
+
 ## Capítulos Principales
 
 ### 1. Introducción

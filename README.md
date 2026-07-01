@@ -10,6 +10,11 @@ Notebooks interactivos del curso de **Algoritmos y Estructuras de Datos** basado
 
 **[🌐 Abrir JupyterLite](https://jr7juanito.github.io/jupyterlite-embed/)**
 
+### 🧪 Duo Python Lab (Editor + Consola)
+
+- **[⚡ Abrir Duo Editor-Consola](https://jr7juanito.github.io/jupyterlite-embed/duo/)** - Editor Python con Pyodide + consola REPL de JupyterLite en paralelo
+- **[🧩 Ver ejemplo embebido](https://jr7juanito.github.io/jupyterlite-embed/duo-embed-example.html)** - Demo lista para copiar iframe
+
 ### 📊 MEGRÁFICA - Notebook Personalizado
 
 - **[Vista con encabezado](https://jr7juanito.github.io/jupyterlite-embed/MEGRAFICA.html)** - Interfaz simple con título
@@ -67,6 +72,7 @@ Copia el código iframe de la columna correspondiente en la tabla de arriba, o u
 - **Vista Lab completa**: `/lab/index.html?path=NOTEBOOK.ipynb`
 - **Vista Notebook clásica**: `/notebooks/index.html?path=NOTEBOOK.ipynb`
 - **Consola Python**: `/repl/index.html`
+- **Duo Editor + Consola**: `/duo/`
 
 ---
 

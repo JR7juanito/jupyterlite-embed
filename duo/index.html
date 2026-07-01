@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duo Python Lab | Editor + Consola</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1018;
+      --bg-soft: #10192a;
+      --panel: rgba(17, 27, 44, 0.9);
+      --panel-strong: #121d30;
+      --text: #e6edf7;
+      --muted: #9bb0d0;
+      --accent: #ff7a18;
+      --accent-2: #11d6c2;
+      --danger: #ff5d73;
+      --ok: #3ee290;
+      --border: rgba(155, 176, 208, 0.2);
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Space Grotesk", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255, 122, 24, 0.15), transparent 36%),
+        radial-gradient(circle at 80% 85%, rgba(17, 214, 194, 0.16), transparent 32%),
+        linear-gradient(155deg, #0b1018 0%, #0a1626 45%, #0f0f1d 100%);
+      padding: 20px;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(45px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.45;
+    }
+
+    .orb-a {
+      width: 220px;
+      height: 220px;
+      background: rgba(255, 122, 24, 0.55);
+      top: -40px;
+      right: 7%;
+      animation: floatA 7s ease-in-out infinite;
+    }
+
+    .orb-b {
+      width: 260px;
+      height: 260px;
+      background: rgba(17, 214, 194, 0.45);
+      bottom: -70px;
+      left: 4%;
+      animation: floatB 9s ease-in-out infinite;
+    }
+
+    @keyframes floatA {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(18px); }
+    }
+
+    @keyframes floatB {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-16px); }
+    }
+
+    .app {
+      position: relative;
+      z-index: 2;
+      max-width: 1500px;
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero {
+      background: linear-gradient(120deg, rgba(18, 29, 48, 0.9), rgba(16, 25, 42, 0.88));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: grid;
+      gap: 10px;
+      animation: reveal 500ms ease-out;
+    }
+
+    @keyframes reveal {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero h1 {
+      font-size: clamp(1.4rem, 2.3vw, 2.2rem);
+      letter-spacing: 0.2px;
+    }
+
+    .hero p {
+      color: var(--muted);
+    }
+
+    .hero .kbd {
+      font-family: "IBM Plex Mono", monospace;
+      background: rgba(17, 214, 194, 0.12);
+      color: #9ff7ee;
+      border: 1px solid rgba(17, 214, 194, 0.32);
+      border-radius: 8px;
+      padding: 2px 8px;
+      font-size: 0.88rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 14px;
+      min-height: calc(100vh - 210px);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.14);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 210px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .dot-red { background: var(--danger); }
+    .dot-yellow { background: #ffd166; }
+    .dot-green { background: var(--ok); }
+
+    .title {
+      font-size: 0.97rem;
+      letter-spacing: 0.2px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-run {
+      background: linear-gradient(120deg, var(--accent), #ff9d4d);
+      color: #241408;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(255, 122, 24, 0.24);
+    }
+
+    .btn-lite {
+      background: rgba(155, 176, 208, 0.13);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .editor-shell {
+      display: grid;
+      grid-template-rows: minmax(260px, 1fr) 220px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    #editor {
+      width: 100%;
+      height: 100%;
+      min-height: 260px;
+      font-size: 15px;
+      font-family: "IBM Plex Mono", Consolas, monospace;
+    }
+
+    .console-wrap {
+      border-top: 1px solid var(--border);
+      background: #09111d;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 0;
+    }
+
+    .console-head {
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(155, 176, 208, 0.18);
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    .status-ready { color: var(--ok); }
+    .status-busy { color: #ffd166; }
+    .status-error { color: var(--danger); }
+
+    #console {
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      color: #dce8ff;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .frame-shell {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .frame-note {
+      padding: 10px 12px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.12);
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+
+    .fallback {
+      padding: 14px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .fallback a {
+      color: #9ff7ee;
+    }
+
+    @media (max-width: 1080px) {
+      .grid {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .panel {
+        min-height: 70vh;
+      }
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding: 12px;
+      }
+
+      .hero {
+        padding: 16px;
+      }
+
+      .panel-head {
+        padding: 12px;
+      }
+
+      .editor-shell {
+        grid-template-rows: minmax(240px, 1fr) 210px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+
+  <main class="app">
+    <section class="hero">
+      <h1>Duo Python Lab: Editor + Consola en vivo</h1>
+      <p>Escribe Python a la izquierda, ejecútalo con Pyodide sin backend y compáralo con el REPL de JupyterLite a la derecha. Todo es efímero: refrescas y vuelves al estado inicial.</p>
+      <p>Atajos: <span class="kbd">Ctrl + Enter</span> ejecuta el bloque, <span class="kbd">Ctrl + L</span> limpia la consola.</p>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <header class="panel-head">
+          <div class="title-wrap">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+            <div>
+              <div class="title">Editor Python Local</div>
+              <div class="subtitle">Pyodide runtime | modo sesión</div>
+            </div>
+          </div>
+          <div class="actions">
+            <button id="loadDemoBtn" class="btn-lite">Cargar demo</button>
+            <button id="clearBtn" class="btn-lite">Limpiar consola</button>
+            <button id="resetBtn" class="btn-lite">Reset runtime</button>
+            <button id="runBtn" class="btn-run">Ejecutar</button>
+          </div>
+        </header>
+
+        <div class="editor-shell">
+          <div id="editor" aria-label="Editor de codigo Python"></div>
+
+          <section class="console-wrap">
+            <div class="console-head">
+              <span>Terminal de salida</span>
+              <span id="status" class="status-busy">Inicializando Pyodide...</span>
+            </div>
+            <pre id="console">Cargando runtime de Python...</pre>
+          </section>
+        </div>
+      </article>
+
+      <article class="panel">
+        <header class="panel-head">
+          <div>
+            <div class="title">Consola JupyterLite</div>
+            <div class="subtitle">REPL del sitio publicado</div>
+          </div>
+          <div class="actions">
+            <button id="openReplBtn" class="btn-lite">Abrir en pestaña</button>
+          </div>
+        </header>
+
+        <div class="frame-shell">
+          <div class="frame-note">
+            Si cargas esta pagina fuera del build de JupyterLite, se usa fallback automatico a la URL publica del repo.
+          </div>
+          <iframe id="replFrame" title="JupyterLite REPL"></iframe>
+        </div>
+        <div class="fallback">
+          URL esperada local: <strong>/repl/index.html</strong>. Fallback publico:
+          <a href="https://jr7juanito.github.io/jupyterlite-embed/repl/index.html" target="_blank" rel="noopener noreferrer">https://jr7juanito.github.io/jupyterlite-embed/repl/index.html</a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.39.0/ace.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script type="module">
+    import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs";
+
+    const editor = ace.edit("editor");
+    editor.setTheme("ace/theme/one_dark");
+    editor.session.setMode("ace/mode/python");
+    editor.setOptions({
+      fontFamily: "IBM Plex Mono, Consolas, monospace",
+      fontSize: "15px",
+      showPrintMargin: false,
+      tabSize: 4,
+      useSoftTabs: true,
+      wrap: true,
+      enableBasicAutocompletion: true,
+      enableLiveAutocompletion: false
+    });
+
+    const starterCode = `import math
+import random
+
+print("Duo Python Lab listo")
+print("Raiz de 81:", math.sqrt(81))
+print("Numero aleatorio entre 1 y 10:", random.randint(1, 10))
+
+for n in range(3):
+    print(f"iteracion {n}")`;
+
+    editor.setValue(starterCode, -1);
+
+    const statusEl = document.getElementById("status");
+    const consoleEl = document.getElementById("console");
+    const runBtn = document.getElementById("runBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const loadDemoBtn = document.getElementById("loadDemoBtn");
+    const openReplBtn = document.getElementById("openReplBtn");
+    const replFrame = document.getElementById("replFrame");
+
+    const publicReplUrl = "https://jr7juanito.github.io/jupyterlite-embed/repl/index.html";
+    const localReplUrl = "../repl/index.html";
+    let pyodide;
+
+    function setStatus(message, tone = "busy") {
+      statusEl.textContent = message;
+      statusEl.className = tone === "ready" ? "status-ready" : tone === "error" ? "status-error" : "status-busy";
+    }
+
+    function log(text = "", type = "out") {
+      const prefix = type === "err" ? "[stderr] " : type === "sys" ? "[system] " : "";
+      consoleEl.textContent += `${prefix}${text}\n`;
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    function clearConsole() {
+      consoleEl.textContent = "";
+    }
+
+    async function loadRuntime() {
+      clearConsole();
+      setStatus("Inicializando Pyodide...", "busy");
+      runBtn.disabled = true;
+
+      try {
+        pyodide = await loadPyodide({
+          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/",
+          stdout: (msg) => log(msg, "out"),
+          stderr: (msg) => log(msg, "err")
+        });
+
+        // Preimporta modulos comunes para acelerar los primeros ejemplos.
+        await pyodide.runPythonAsync("import math, random, statistics");
+        log("Python runtime listo. Puedes importar modulos estandar (math, random, statistics, etc).", "sys");
+        setStatus("Runtime listo", "ready");
+      } catch (error) {
+        setStatus("Error de inicializacion", "error");
+        log(String(error), "err");
+      } finally {
+        runBtn.disabled = false;
+      }
+    }
+
+    async function runCode() {
+      if (!pyodide) {
+        log("Runtime aun no disponible.", "err");
+        return;
+      }
+
+      const code = editor.getValue().trimEnd();
+      if (!code) {
+        log("No hay codigo para ejecutar.", "sys");
+        return;
+      }
+
+      setStatus("Ejecutando...", "busy");
+      runBtn.disabled = true;
+      log(`\n>>> Ejecutando bloque (${new Date().toLocaleTimeString()})`, "sys");
+
+      try {
+        const result = await pyodide.runPythonAsync(code);
+        if (result !== undefined && result !== null) {
+          log(String(result), "out");
+        }
+        setStatus("Runtime listo", "ready");
+      } catch (error) {
+        setStatus("Error en ejecucion", "error");
+        log(String(error), "err");
+      } finally {
+        runBtn.disabled = false;
+      }
+    }
+
+    function resolveReplUrl() {
+      replFrame.src = localReplUrl;
+      const fallbackTimer = setTimeout(() => {
+        if (!replFrame.dataset.loaded) {
+          replFrame.src = publicReplUrl;
+          log("REPL local no detectado; usando fallback publico.", "sys");
+        }
+      }, 3500);
+
+      replFrame.addEventListener("load", () => {
+        replFrame.dataset.loaded = "1";
+        clearTimeout(fallbackTimer);
+      }, { once: true });
+    }
+
+    runBtn.addEventListener("click", runCode);
+    clearBtn.addEventListener("click", () => {
+      clearConsole();
+      log("Consola limpiada.", "sys");
+    });
+
+    resetBtn.addEventListener("click", async () => {
+      log("Reiniciando runtime...", "sys");
+      await loadRuntime();
+    });
+
+    loadDemoBtn.addEventListener("click", () => {
+      const demo = `import math
+import random
+
+datos = [random.randint(1, 100) for _ in range(8)]
+print("datos:", datos)
+print("max:", max(datos), "min:", min(datos))
+print("promedio:", sum(datos) / len(datos))
+print("angulo 45° -> rad:", math.radians(45))`;
+      editor.setValue(demo, -1);
+      log("Demo cargada en el editor.", "sys");
+    });
+
+    openReplBtn.addEventListener("click", () => {
+      const url = replFrame.src || publicReplUrl;
+      window.open(url, "_blank", "noopener,noreferrer");
+    });
+
+    window.addEventListener("keydown", async (event) => {
+      if (event.ctrlKey && event.key === "Enter") {
+        event.preventDefault();
+        await runCode();
+      }
+      if (event.ctrlKey && event.key.toLowerCase() === "l") {
+        event.preventDefault();
+        clearConsole();
+      }
+    });
+
+    resolveReplUrl();
+    loadRuntime();
+  </script>
+</body>
+</html>
