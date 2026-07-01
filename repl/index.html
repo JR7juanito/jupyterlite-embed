@@ -117,6 +117,7 @@
   <script type="module">
     import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs";
 
+    const isEmbedded = new URLSearchParams(window.location.search).get("embedded") === "1";
     const out = document.getElementById("out");
     const cmd = document.getElementById("cmd");
     const status = document.getElementById("status");
@@ -124,8 +125,13 @@
     const resetBtn = document.getElementById("reset");
 
     let pyodide;
+    let bootPromise = null;
     let history = [];
     let histIx = -1;
+
+    if (isEmbedded) {
+      document.title = "Consola Pyodide Conectada";
+    }
 
     function log(msg, cls = "") {
       const span = document.createElement("span");
@@ -133,6 +139,12 @@
       span.textContent = msg + "\n";
       out.appendChild(span);
       out.scrollTop = out.scrollHeight;
+    }
+
+    function notifyParent(message) {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage(message, window.location.origin);
+      }
     }
 
     async function boot() {
@@ -150,6 +162,30 @@
       status.className = "status";
       log("[system] Runtime listo. Modulos base: math, random, statistics", "sys");
       cmd.focus();
+      notifyParent({ type: "duo-ready" });
+    }
+
+    async function ensureRuntime() {
+      if (!bootPromise) {
+        bootPromise = boot();
+      }
+      await bootPromise;
+    }
+
+    async function runBlock(code) {
+      if (!code || !String(code).trim()) return;
+      log(">>> [bloque editor]", "sys");
+
+      try {
+        const result = await pyodide.runPythonAsync(String(code));
+        if (result !== undefined && result !== null) {
+          log(String(result));
+        }
+        notifyParent({ type: "duo-exec-done", ok: true });
+      } catch (e) {
+        log(String(e), "err");
+        notifyParent({ type: "duo-exec-done", ok: false });
+      }
     }
 
     async function runLine(line) {
@@ -199,10 +235,31 @@
     resetBtn.addEventListener("click", async () => {
       out.textContent = "";
       log("[system] Reiniciando runtime...", "warn");
-      await boot();
+      bootPromise = boot();
+      await bootPromise;
+      notifyParent({ type: "duo-reset-done" });
     });
 
-    boot();
+    window.addEventListener("message", async (event) => {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data || {};
+
+      if (data.type === "duo-exec") {
+        await ensureRuntime();
+        await runBlock(data.code);
+      } else if (data.type === "duo-clear") {
+        out.textContent = "";
+        log("[system] Consola limpia", "sys");
+      } else if (data.type === "duo-reset") {
+        out.textContent = "";
+        log("[system] Reiniciando runtime...", "warn");
+        bootPromise = boot();
+        await bootPromise;
+        notifyParent({ type: "duo-reset-done" });
+      }
+    });
+
+    bootPromise = boot();
   </script>
 </body>
 </html>

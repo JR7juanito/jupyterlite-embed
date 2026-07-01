@@ -175,7 +175,7 @@
         <div class="btns">
           <button class="run" id="runBtn">Ejecutar</button>
           <button class="secondary" id="copyBtn">Copiar</button>
-          <button id="clearBtn">Limpiar salida</button>
+          <button id="clearBtn">Limpiar consola</button>
           <button class="danger" id="resetBtn">Reset runtime</button>
         </div>
       </div>
@@ -185,26 +185,23 @@ import random
 print("Hola desde Python real (Pyodide)")
 print("sqrt(81) =", math.sqrt(81))
 print("random 1..10 =", random.randint(1, 10))</textarea>
-      <pre id="output">Cargando runtime...</pre>
+      <div class="note">Ejecutar envía el codigo del editor al panel derecho (consola conectada).</div>
     </section>
 
     <section class="panel">
       <div class="panel-head">
-        <span>Consola oficial JupyterLite (real)</span>
+        <span>Consola Pyodide conectada (real)</span>
         <div class="btns">
           <button id="openConsoleBtn">Abrir en pestaña</button>
         </div>
       </div>
-      <iframe id="consoleFrame" title="Consola oficial JupyterLite" src="../consoles/index.html"></iframe>
-      <div class="note">Si no carga, abre directamente: /consoles/index.html</div>
+      <iframe id="consoleFrame" title="Consola Pyodide conectada" src="../repl/index.html?embedded=1"></iframe>
+      <div class="note">Esta consola recibe codigo del editor por mensaje en tiempo real.</div>
     </section>
   </main>
 
   <script type="module">
-    import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs";
-
     const editor = document.getElementById("editor");
-    const output = document.getElementById("output");
     const status = document.getElementById("status");
     const runBtn = document.getElementById("runBtn");
     const copyBtn = document.getElementById("copyBtn");
@@ -213,67 +210,62 @@ print("random 1..10 =", random.randint(1, 10))</textarea>
     const openConsoleBtn = document.getElementById("openConsoleBtn");
     const consoleFrame = document.getElementById("consoleFrame");
 
-    let pyodide;
+    const bridgeOrigin = window.location.origin;
+    let consoleReady = false;
 
-    function write(text, kind = "") {
-      const line = document.createElement("span");
-      if (kind === "err") line.style.color = "#ff9aad";
-      if (kind === "sys") line.style.color = "#a5bbdf";
-      line.textContent = text + "\n";
-      output.appendChild(line);
-      output.scrollTop = output.scrollHeight;
-    }
+    function sendToConsole(message) {
+      if (!consoleFrame.contentWindow) {
+        status.textContent = "Consola no disponible";
+        return false;
+      }
 
-    function clearOutput() {
-      output.textContent = "";
-    }
-
-    async function initRuntime() {
-      runBtn.disabled = true;
-      status.textContent = "Inicializando Python local...";
-      clearOutput();
-
-      pyodide = await loadPyodide({
-        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/",
-        stdout: (m) => write(m),
-        stderr: (m) => write(m, "err")
-      });
-
-      await pyodide.runPythonAsync("import math, random, statistics");
-      status.textContent = "Python listo";
-      write("[system] Runtime listo", "sys");
-      runBtn.disabled = false;
+      consoleFrame.contentWindow.postMessage(message, bridgeOrigin);
+      return true;
     }
 
     async function runCode() {
-      if (!pyodide) return;
       const code = editor.value;
       if (!code.trim()) return;
 
-      runBtn.disabled = true;
-      status.textContent = "Ejecutando...";
-      write("[system] Ejecutando bloque", "sys");
+      if (!consoleReady) {
+        status.textContent = "Esperando consola...";
+      }
 
-      try {
-        const result = await pyodide.runPythonAsync(code);
-        if (result !== undefined && result !== null) {
-          write(String(result));
-        }
-      } catch (err) {
-        write(String(err), "err");
-      } finally {
-        status.textContent = "Python listo";
-        runBtn.disabled = false;
+      const ok = sendToConsole({ type: "duo-exec", code });
+      if (ok) {
+        status.textContent = "Bloque enviado a la consola";
       }
     }
 
+    window.addEventListener("message", (event) => {
+      if (event.origin !== bridgeOrigin) return;
+      const data = event.data || {};
+
+      if (data.type === "duo-ready") {
+        consoleReady = true;
+        status.textContent = "Consola conectada";
+      } else if (data.type === "duo-exec-done") {
+        status.textContent = data.ok ? "Ejecucion completada" : "Error en consola";
+      } else if (data.type === "duo-reset-done") {
+        status.textContent = "Runtime reiniciado";
+      }
+    });
+
     runBtn.addEventListener("click", runCode);
-    clearBtn.addEventListener("click", clearOutput);
-    resetBtn.addEventListener("click", initRuntime);
+    clearBtn.addEventListener("click", () => {
+      sendToConsole({ type: "duo-clear" });
+      status.textContent = "Consola limpiada";
+    });
+
+    resetBtn.addEventListener("click", () => {
+      sendToConsole({ type: "duo-reset" });
+      status.textContent = "Reiniciando runtime...";
+    });
+
     copyBtn.addEventListener("click", async () => {
       await navigator.clipboard.writeText(editor.value);
       status.textContent = "Codigo copiado";
-      setTimeout(() => { status.textContent = "Python listo"; }, 1200);
+      setTimeout(() => { status.textContent = consoleReady ? "Consola conectada" : "Esperando consola..."; }, 1200);
     });
 
     openConsoleBtn.addEventListener("click", () => {
@@ -287,7 +279,7 @@ print("random 1..10 =", random.randint(1, 10))</textarea>
       }
     });
 
-    initRuntime();
+    status.textContent = "Esperando consola...";
   </script>
 </body>
 </html>
