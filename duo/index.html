@@ -6,7 +6,7 @@
   <title>Duo Python: Editor + Consola Real</title>
   <style>
     :root {
-      --bg: #f4f6fb;
+      --bg: #0b1d3a;
       --panel: #ffffff;
       --line: #d8dfef;
       --text: #16213d;
@@ -22,7 +22,7 @@
       margin: 0;
       min-height: 100vh;
       font-family: "Segoe UI", Tahoma, sans-serif;
-      background: var(--bg);
+      background: linear-gradient(135deg, #08162c 0%, #0b1d3a 55%, #12305c 100%);
       color: var(--text);
       display: grid;
       grid-template-rows: auto 1fr;
@@ -180,9 +180,6 @@
     <section class="panel">
       <div class="panel-head">
         <span>Consola Pyodide conectada (real)</span>
-        <div class="btns">
-          <button id="openConsoleBtn">Abrir en pestaña</button>
-        </div>
       </div>
       <iframe id="consoleFrame" title="Consola Pyodide conectada" src="../repl/index.html?embedded=1"></iframe>
       <div class="note">Esta consola recibe codigo del editor por mensaje en tiempo real.</div>
@@ -197,7 +194,6 @@
     const copyBtn = document.getElementById("copyBtn");
     const clearBtn = document.getElementById("clearBtn");
     const resetBtn = document.getElementById("resetBtn");
-    const openConsoleBtn = document.getElementById("openConsoleBtn");
     const consoleFrame = document.getElementById("consoleFrame");
 
     const bridgeOrigin = window.location.origin;
@@ -299,10 +295,6 @@ print("random 1..10 =", random.randint(1, 10))`;
       await navigator.clipboard.writeText(monacoEditor.getValue());
       status.textContent = "Codigo copiado";
       setTimeout(() => { status.textContent = consoleReady ? "Consola conectada" : "Esperando consola..."; }, 1200);
-    });
-
-    openConsoleBtn.addEventListener("click", () => {
-      window.open(consoleFrame.src, "_blank", "noopener,noreferrer");
     });
 
     window.addEventListener("keydown", async (e) => {
