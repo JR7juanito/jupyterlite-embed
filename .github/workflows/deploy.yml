@@ -43,6 +43,11 @@ jobs:
           cp -r duo/. _output/duo/
           cp duo-embed-example.html _output/duo-embed-example.html
 
+      - name: Override REPL with stable Pyodide page
+        run: |
+          mkdir -p _output/repl
+          cp repl/index.html _output/repl/index.html
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
