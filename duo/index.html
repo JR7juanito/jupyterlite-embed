@@ -97,28 +97,28 @@
       cursor: pointer;
     }
 
+    .btns button {
+      background: #132745;
+      border-color: #2b416b;
+      color: var(--text);
+    }
+
+    .btns button:hover {
+      background: #183052;
+      border-color: #3a5688;
+    }
+
     .run {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    .secondary {
-      background: var(--accent-2);
-      border-color: var(--accent-2);
-      color: #fff;
-    }
-
-    .danger {
-      background: var(--danger);
-      border-color: var(--danger);
-      color: #fff;
+      border-color: #3a5688;
     }
 
     #editor {
       width: 100%;
       height: 100%;
       min-height: 0;
+      position: relative;
+      border-left: 1px solid rgba(157, 177, 216, 0.14);
+      box-shadow: inset 0 8px 0 rgba(255, 255, 255, 0.02);
     }
 
     iframe {
@@ -154,13 +154,14 @@
         <span>Editor (multiplataforma)</span>
         <div class="btns">
           <button class="run" id="runBtn">Ejecutar</button>
-          <button class="secondary" id="copyBtn">Copiar</button>
-          <button id="clearBtn">Limpiar consola</button>
-          <button class="danger" id="resetBtn">Reset runtime</button>
+          <button id="pasteBtn">Pegar</button>
+          <button id="copyBtn">Copiar</button>
+          <button id="clearBtn">Limpiar</button>
+          <button id="resetBtn">Reset</button>
         </div>
       </div>
       <div id="editor" aria-label="Editor de Python"></div>
-      <div class="note">Ejecutar envía el codigo del editor al panel derecho (consola conectada).</div>
+      <div class="note"># Prueba ideas aquí y ejecuta cuando quieras. El editor no corre nada por defecto.</div>
     </section>
 
     <section class="panel">
@@ -177,6 +178,7 @@
     const editorRoot = document.getElementById("editor");
     const status = document.getElementById("status");
     const runBtn = document.getElementById("runBtn");
+    const pasteBtn = document.getElementById("pasteBtn");
     const copyBtn = document.getElementById("copyBtn");
     const clearBtn = document.getElementById("clearBtn");
     const resetBtn = document.getElementById("resetBtn");
@@ -187,12 +189,12 @@
     let monacoEditor = null;
     const pendingMessages = [];
 
-    const starterCode = `import math
-import random
-
-print("Hola desde Python real (Pyodide)")
-print("sqrt(81) =", math.sqrt(81))
-print("random 1..10 =", random.randint(1, 10))`;
+    const starterCode = `# Prueba ideas aquí
+  # Escribe Python, importa módulos o prueba funciones cuando quieras.
+  # Ejemplo:
+  # print("hola mundo")
+  # import math
+  # print(math.sqrt(81))`;
 
     function setupEditor() {
       return new Promise((resolve) => {
@@ -219,7 +221,8 @@ print("random 1..10 =", random.randint(1, 10))`;
             insertSpaces: true,
             glyphMargin: false,
             folding: true,
-            renderLineHighlight: "all"
+            renderLineHighlight: "all",
+            padding: { top: 10, bottom: 8 }
           });
 
           resolve();
@@ -282,6 +285,23 @@ print("random 1..10 =", random.randint(1, 10))`;
     });
 
     runBtn.addEventListener("click", runCode);
+    pasteBtn.addEventListener("click", async () => {
+      if (!monacoEditor) return;
+
+      try {
+        const text = await navigator.clipboard.readText();
+        const selection = monacoEditor.getSelection();
+        monacoEditor.executeEdits("paste-from-clipboard", [{
+          range: selection,
+          text,
+          forceMoveMarkers: true
+        }]);
+        monacoEditor.focus();
+        status.textContent = text ? "Pegado en el editor" : "Portapapeles vacio";
+      } catch (error) {
+        status.textContent = "No se pudo pegar";
+      }
+    });
     clearBtn.addEventListener("click", () => {
       sendToConsole({ type: "duo-clear" });
       status.textContent = "Consola limpiada";
