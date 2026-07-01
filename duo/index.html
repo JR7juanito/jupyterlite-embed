@@ -118,13 +118,7 @@
     #editor {
       width: 100%;
       height: 100%;
-      border: 0;
-      outline: none;
-      resize: none;
-      padding: 12px;
-      font: 14px/1.45 Consolas, "Courier New", monospace;
-      color: #0f234f;
-      background: #fcfdff;
+      min-height: 0;
     }
 
     #output {
@@ -179,12 +173,7 @@
           <button class="danger" id="resetBtn">Reset runtime</button>
         </div>
       </div>
-      <textarea id="editor" spellcheck="false">import math
-import random
-
-print("Hola desde Python real (Pyodide)")
-print("sqrt(81) =", math.sqrt(81))
-print("random 1..10 =", random.randint(1, 10))</textarea>
+      <div id="editor" aria-label="Editor de Python"></div>
       <div class="note">Ejecutar envía el codigo del editor al panel derecho (consola conectada).</div>
     </section>
 
@@ -200,8 +189,9 @@ print("random 1..10 =", random.randint(1, 10))</textarea>
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
   <script type="module">
-    const editor = document.getElementById("editor");
+    const editorRoot = document.getElementById("editor");
     const status = document.getElementById("status");
     const runBtn = document.getElementById("runBtn");
     const copyBtn = document.getElementById("copyBtn");
@@ -212,6 +202,47 @@ print("random 1..10 =", random.randint(1, 10))</textarea>
 
     const bridgeOrigin = window.location.origin;
     let consoleReady = false;
+    let monacoEditor = null;
+
+    const starterCode = `import math
+import random
+
+print("Hola desde Python real (Pyodide)")
+print("sqrt(81) =", math.sqrt(81))
+print("random 1..10 =", random.randint(1, 10))`;
+
+    function setupEditor() {
+      return new Promise((resolve) => {
+        window.require.config({
+          paths: {
+            vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs"
+          }
+        });
+
+        window.require(["vs/editor/editor.main"], () => {
+          monacoEditor = window.monaco.editor.create(editorRoot, {
+            value: starterCode,
+            language: "python",
+            theme: "vs-dark",
+            automaticLayout: true,
+            minimap: { enabled: false },
+            fontFamily: "Consolas, 'Courier New', monospace",
+            fontSize: 14,
+            lineNumbers: "on",
+            roundedSelection: false,
+            scrollBeyondLastLine: false,
+            wordWrap: "on",
+            tabSize: 4,
+            insertSpaces: true,
+            glyphMargin: false,
+            folding: true,
+            renderLineHighlight: "all"
+          });
+
+          resolve();
+        });
+      });
+    }
 
     function sendToConsole(message) {
       if (!consoleFrame.contentWindow) {
@@ -224,7 +255,8 @@ print("random 1..10 =", random.randint(1, 10))</textarea>
     }
 
     async function runCode() {
-      const code = editor.value;
+      if (!monacoEditor) return;
+      const code = monacoEditor.getValue();
       if (!code.trim()) return;
 
       if (!consoleReady) {
@@ -263,7 +295,8 @@ print("random 1..10 =", random.randint(1, 10))</textarea>
     });
 
     copyBtn.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(editor.value);
+      if (!monacoEditor) return;
+      await navigator.clipboard.writeText(monacoEditor.getValue());
       status.textContent = "Codigo copiado";
       setTimeout(() => { status.textContent = consoleReady ? "Consola conectada" : "Esperando consola..."; }, 1200);
     });
@@ -279,6 +312,8 @@ print("random 1..10 =", random.randint(1, 10))</textarea>
       }
     });
 
+    status.textContent = "Cargando editor...";
+    await setupEditor();
     status.textContent = "Esperando consola...";
   </script>
 </body>
