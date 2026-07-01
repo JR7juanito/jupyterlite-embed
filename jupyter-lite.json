@@ -9,7 +9,9 @@
       "@jupyterlab/filebrowser-extension:browser",
       "@jupyterlab/filebrowser-extension:download",
       "@jupyterlab/docmanager-extension:download",
-      "@jupyterlab/mainmenu-extension:logo"
+      "@jupyterlab/mainmenu-extension:logo",
+      "jupyterlab-jupytext:plugin",
+      "@jupyterlab/codemirror-extension:commands"
     ],
     "settingsOverrides": {
       "@jupyterlab/apputils-extension:themes": {
