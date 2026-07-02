@@ -86,13 +86,22 @@
     }
 
     .prompt-row {
-      grid-template-columns: 4ch minmax(0, 1fr) auto;
+      grid-template-columns: 4ch max-content auto;
       align-items: center;
       white-space: pre;
       width: max-content;
-      min-width: 100%;
+      min-width: max-content;
       padding-top: 0.1rem;
       padding-bottom: 0.1rem;
+    }
+
+    .prompt-row .payload {
+      width: max-content;
+      min-width: 0;
+    }
+
+    .prompt-row .cursor {
+      margin-left: 0;
     }
 
     .banner {
