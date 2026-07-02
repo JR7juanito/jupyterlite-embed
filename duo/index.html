@@ -319,6 +319,18 @@
       align-content: start;
     }
 
+    @media (pointer: coarse) and (min-width: 900px) and (orientation: landscape) {
+      .touch-safe .layout {
+        grid-template-columns: 1fr 1fr !important;
+        align-content: stretch;
+      }
+
+      .touch-safe .panel:first-child,
+      .touch-safe .panel:last-child {
+        min-height: 0;
+      }
+    }
+
     .touch-safe .panel {
       min-height: 0;
     }
