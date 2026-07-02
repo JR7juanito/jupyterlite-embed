@@ -383,7 +383,7 @@
 
     function notifyParent(message) {
       if (window.parent && window.parent !== window) {
-        window.parent.postMessage(message, window.location.origin);
+        window.parent.postMessage(message, "*");
       }
     }
 
@@ -400,12 +400,134 @@
         await pyodide.runPythonAsync(`
     import ast
     import builtins
+    import inspect
+    import sys
     import pydoc
+    from pyodide_js import loadPackage as js_load_package
 
     _DUO_GLOBALS = {"__name__": "__main__"}
+    _DUO_LOADED_PACKAGES = set()
+
+    _DUO_PACKAGE_ALIASES = {
+      "Bio": "biopython",
+      "PIL": "pillow",
+      "cv2": "opencv-python",
+      "matplotlib": "matplotlib",
+      "mpmath": "mpmath",
+      "networkx": "networkx",
+      "numpy": "numpy",
+      "pandas": "pandas",
+      "scipy": "scipy",
+      "sklearn": "scikit-learn",
+      "sympy": "sympy",
+    }
+
+    _DUO_SKIP_IMPORTS = {
+      "__future__",
+      "builtins",
+      "collections",
+      "contextlib",
+      "dataclasses",
+      "enum",
+      "functools",
+      "gc",
+      "importlib",
+      "inspect",
+      "io",
+      "itertools",
+      "json",
+      "math",
+      "operator",
+      "os",
+      "pathlib",
+      "pydoc",
+      "random",
+      "re",
+      "statistics",
+      "sys",
+      "time",
+      "types",
+      "typing",
+      "ast",
+      "micropip",
+      "pyodide_js",
+      "js",
+    }
+
+    try:
+      _DUO_SKIP_IMPORTS.update(sys.stdlib_module_names)
+    except Exception:
+      pass
+
+    def _duo_import_roots(code):
+      try:
+        tree = ast.parse(code)
+      except SyntaxError:
+        return []
+
+      roots = []
+      for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+          for alias in node.names:
+            roots.append(alias.name.split(".", 1)[0])
+        elif isinstance(node, ast.ImportFrom) and node.module:
+          roots.append(node.module.split(".", 1)[0])
+      return roots
+
+    def _duo_candidate_packages(module_name):
+      candidates = []
+      alias = _DUO_PACKAGE_ALIASES.get(module_name)
+      if alias:
+        candidates.append(alias)
+      if module_name not in candidates:
+        candidates.append(module_name)
+      return candidates
+
+    async def _duo_load_package(package_name):
+      if package_name in _DUO_LOADED_PACKAGES:
+        return
+
+      try:
+        await js_load_package(package_name)
+        print(f"[auto] Loaded {package_name}")
+        _DUO_LOADED_PACKAGES.add(package_name)
+        return
+      except Exception:
+        pass
+
+      await js_load_package("micropip")
+      import micropip
+      await micropip.install(package_name)
+      print(f"[auto] Installed {package_name}")
+      _DUO_LOADED_PACKAGES.add(package_name)
+
+    async def _duo_prepare_imports(code):
+      imports_to_try = []
+      for root in _duo_import_roots(code):
+        if root in _DUO_SKIP_IMPORTS:
+          continue
+        for candidate in _duo_candidate_packages(root):
+          if candidate not in imports_to_try:
+            imports_to_try.append(candidate)
+
+      for package_name in imports_to_try:
+        if package_name in sys.modules:
+          continue
+        await _duo_load_package(package_name)
 
     def _duo_exec(code):
       exec(code, _DUO_GLOBALS, _DUO_GLOBALS)
+
+    async def _duo_exec_file(code):
+      await _duo_prepare_imports(code)
+      compiled = compile(code, "<duo>", "exec", flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+      result = eval(compiled, _DUO_GLOBALS, _DUO_GLOBALS)
+      if inspect.isawaitable(result):
+        return await result
+
+    async def _duo_run_line(code):
+      await _duo_prepare_imports(code)
+      return _duo_run(code)
 
     def _duo_run(code):
       tree = ast.parse(code, mode="exec")
@@ -441,12 +563,408 @@
     builtins.help = _duo_help
     `);
 
+        await pyodide.runPythonAsync(`
+import builtins
+import contextlib
+import inspect
+import io
+
+try:
+  import numpy as np
+except Exception:
+  np = None
+
+def _duo_is_max_heap(values):
+  for index in range(len(values)):
+    left = 2 * index + 1
+    right = left + 1
+    if left < len(values) and values[index] < values[left]:
+      return False
+    if right < len(values) and values[index] < values[right]:
+      return False
+  return True
+
+def _duo_particion_ok(values, pivot, split):
+  return split == sum(1 for value in values if value < pivot) and all(value < pivot for value in values[:split]) and all(value > pivot for value in values[split:])
+
+async def _duo_run_mega_tests(code):
+  ns = {"__name__": "__main__", "__builtins__": builtins.__dict__}
+  if np is not None:
+    ns["np"] = np
+
+  capture = io.StringIO()
+  try:
+    await _duo_prepare_imports(code)
+    with contextlib.redirect_stdout(capture), contextlib.redirect_stderr(capture):
+      exec(code, ns, ns)
+  except Exception as exc:
+    print(f"[setup] {type(exc).__name__}: {exc}")
+    captured = capture.getvalue().strip()
+    if captured:
+      print("[setup] salida capturada durante la carga:")
+      print(captured)
+    return False
+
+  if capture.getvalue().strip():
+    print("[setup] salida de carga suprimida")
+
+  passed = 0
+  failed = 0
+  skipped = 0
+
+  def record(name, status, detail=""):
+    nonlocal passed, failed, skipped
+    if status == "ok":
+      passed += 1
+      print(f"[OK] {name}")
+    elif status == "skip":
+      skipped += 1
+      print(f"[SKIP] {name}: {detail}")
+    else:
+      failed += 1
+      print(f"[FAIL] {name}: {detail}")
+
+  def expect_equal(name, got, expected):
+    if got == expected:
+      record(name, "ok")
+    else:
+      record(name, "fail", f"esperado {expected!r}, obtuvo {got!r}")
+
+  def expect_true(name, cond, detail="condición falsa"):
+    record(name, "ok" if cond else "fail", detail)
+
+  def maybe_call(name, *args):
+    fn = ns.get(name)
+    if not callable(fn):
+      record(name, "skip", "no definido")
+      return None
+    return fn(*args)
+
+  # Capítulo 1
+  if callable(ns.get("maximo")):
+    expect_equal("cap1.maximo", maybe_call("maximo", [25, 42, 93, 17, 54, 28]), 93)
+  else:
+    record("cap1.maximo", "skip", "no definido")
+
+  if callable(ns.get("minmax")):
+    expect_equal("cap1.minmax", maybe_call("minmax", [5, 1, 9, 3]), (1, 9))
+  else:
+    record("cap1.minmax", "skip", "no definido")
+
+  if callable(ns.get("particionLomuto")):
+    result = maybe_call("particionLomuto", [73, 21, 34, 98, 56, 37, 77, 65, 82, 15, 36], 50)
+    if isinstance(result, tuple) and len(result) == 3:
+      pivot, split, values = result
+      expect_equal("cap1.particionLomuto.pivot", pivot, 50)
+      expect_true("cap1.particionLomuto.propiedad", _duo_particion_ok(values, pivot, split), f"resultado {result!r}")
+    else:
+      record("cap1.particionLomuto", "fail", f"resultado inesperado: {result!r}")
+  else:
+    record("cap1.particionLomuto", "skip", "no definido")
+
+  if callable(ns.get("evalp")):
+    expect_equal("cap1.evalp", maybe_call("evalp", [5, 2, -3, 4], 2), 29)
+  else:
+    record("cap1.evalp", "skip", "no definido")
+
+  if callable(ns.get("busca")) and np is not None:
+    matrix = np.array([[10, 17, 25, 36, 50, 82], [15, 19, 28, 45, 63, 87], [21, 30, 42, 56, 77, 91], [27, 35, 74, 84, 90, 95], [40, 62, 81, 86, 93, 98]])
+    expect_equal("cap1.busca.ok", maybe_call("busca", 28, matrix), (1, 2))
+    expect_equal("cap1.busca.none", maybe_call("busca", 33, matrix), None)
+  else:
+    record("cap1.busca", "skip", "no definido o sin numpy")
+
+  if callable(ns.get("CamelCase")):
+    expect_equal("cap1.CamelCase", maybe_call("CamelCase", "    Algoritmos y    estructuras de   datos   "), "AlgoritmosYEstructurasDeDatos")
+  else:
+    record("cap1.CamelCase", "skip", "no definido")
+
+  # Capítulo 3
+  if callable(ns.get("mult3")):
+    expect_equal("cap3.mult3.1", maybe_call("mult3", (0, 1), (0, 1)), (-1, 0))
+    expect_equal("cap3.mult3.2", maybe_call("mult3", (2, -4), (1, 3)), (14, 2))
+    expect_equal("cap3.mult3.3", maybe_call("mult3", (-1, 2), (3, 4)), (-11, 2))
+  else:
+    record("cap3.mult3", "skip", "no definido")
+
+  if callable(ns.get("contar_ceros")):
+    expect_equal("cap3.contar_ceros.1", maybe_call("contar_ceros", [0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1], 0, 16), 13)
+    expect_equal("cap3.contar_ceros.2", maybe_call("contar_ceros", [0,1,1,1,1,1,1,1,1], 0, 8), 1)
+    expect_equal("cap3.contar_ceros.3", maybe_call("contar_ceros", [1,1,1,1,1], 0, 4), 0)
+    expect_equal("cap3.contar_ceros.4", maybe_call("contar_ceros", [0,0,0,0,0,0,0], 0, 6), 7)
+  else:
+    record("cap3.contar_ceros", "skip", "no definido")
+
+  if callable(ns.get("LCS")):
+    expect_equal("cap3.LCS.1", maybe_call("LCS", "abracadabra", "pasapalabra"), "aaaabra")
+    lcs_value = maybe_call("LCS", "matemáticas", "computación")
+    expect_true("cap3.LCS.2", lcs_value in ["mta", "mti", "mai"], f"obtuvo {lcs_value!r}")
+  else:
+    record("cap3.LCS", "skip", "no definido")
+
+  if callable(ns.get("salida")):
+    ns["L"] = [
+      "+--+-----+--+",
+      "|  |     |  |",
+      "|  +--+     =",
+      "|     |  |  |",
+      "+--+  |  |  |",
+      "|  |        |",
+      "|  |     |  |",
+      "+--+-----+--+"
+    ]
+    expect_true("cap3.salida.1", maybe_call("salida", 4, 10) in [True, False])
+  else:
+    record("cap3.salida", "skip", "no definido")
+
+  # Capítulo 4
+  if callable(ns.get("binterp")):
+    array = [2.3, 5.4, 7.1, 15.3, 27.4, 28.3, 30.0, 37.8, 45.6]
+    expect_equal("cap4.binterp.1", maybe_call("binterp", 28.3, array), 5)
+    expect_equal("cap4.binterp.2", maybe_call("binterp", 2.3, array), 0)
+    expect_equal("cap4.binterp.3", maybe_call("binterp", 16, array), -1)
+  else:
+    record("cap4.binterp", "skip", "no definido")
+
+  if callable(ns.get("Lista")):
+    try:
+      lista = ns["Lista"]()
+      for value in [44, 13, 65, 42]:
+        lista.insertar_al_inicio(value)
+      if callable(getattr(lista, "reversar", None)):
+        lista.reversar()
+        values = []
+        node = getattr(lista, "primero", None)
+        while node is not None:
+          values.append(node.info)
+          node = node.sgte
+        expect_equal("cap4.reversar", values, [44, 13, 65, 42])
+      else:
+        record("cap4.reversar", "skip", "método no definido")
+    except Exception as exc:
+      record("cap4.reversar", "fail", f"{type(exc).__name__}: {exc}")
+  else:
+    record("cap4.reversar", "skip", "Lista no definida")
+
+  if callable(ns.get("Lista_doble_enlace")):
+    try:
+      lista = ns["Lista_doble_enlace"]()
+      lista.insertar_despues_de(lista.k_esimo(0), 42)
+      lista.insertar_despues_de(lista.k_esimo(1), 65)
+      lista.insertar_despues_de(lista.k_esimo(2), 13)
+      lista.insertar_despues_de(lista.k_esimo(3), 44)
+      if callable(getattr(lista, "destruye_prev", None)) and callable(getattr(lista, "repara_prev", None)):
+        lista.destruye_prev()
+        lista.repara_prev()
+        forward = list(lista.ascendente()) if callable(getattr(lista, "ascendente", None)) else []
+        backward = list(lista.descendente()) if callable(getattr(lista, "descendente", None)) else []
+        expect_equal("cap4.doble.forward", forward, [42, 65, 13, 44])
+        expect_equal("cap4.doble.backward", backward, [44, 13, 65, 42])
+      else:
+        record("cap4.doble", "skip", "métodos no definidos")
+    except Exception as exc:
+      record("cap4.doble", "fail", f"{type(exc).__name__}: {exc}")
+  else:
+    record("cap4.doble", "skip", "Lista_doble_enlace no definida")
+
+  if callable(ns.get("Arbol")) and callable(ns.get("Nodoi")) and callable(ns.get("Nodoe")):
+    try:
+      formula = ns["Arbol"](
+        ns["Nodoi"](
+          ns["Nodoi"](ns["Nodoe"](5), "+", ns["Nodoe"](2)),
+          "*",
+          ns["Nodoi"](
+            ns["Nodoe"](8),
+            "-",
+            ns["Nodoi"](ns["Nodoe"](9), "/", ns["Nodoe"](3))
+          )
+        )
+      )
+      expect_equal("cap4.evaluar", formula.evaluar(), 35)
+    except Exception as exc:
+      record("cap4.evaluar", "fail", f"{type(exc).__name__}: {exc}")
+  else:
+    record("cap4.evaluar", "skip", "clases no definidas")
+
+  # Capítulo 5
+  if callable(ns.get("chequeo")):
+    expect_equal("cap5.chequeo.1", maybe_call("chequeo", "(()(()))"), "CORRECTA")
+    bad = maybe_call("chequeo", "(()))")
+    expect_true("cap5.chequeo.2", isinstance(bad, str) and bad.startswith("INCORRECTA"), f"obtuvo {bad!r}")
+  else:
+    record("cap5.chequeo", "skip", "no definido")
+
+  if callable(ns.get("chequeo2")):
+    expect_true("cap5.chequeo2.1", maybe_call("chequeo2", "(()())", "(", ")") in ["CORRECTA", True])
+    expect_true("cap5.chequeo2.2", maybe_call("chequeo2", "{([]{()})}", "{[(", "}])") in ["CORRECTA", True])
+    expect_true("cap5.chequeo2.3", maybe_call("chequeo2", "{([]()})}", "{[(", "}])") in ["INCORRECTA", False])
+  else:
+    record("cap5.chequeo2", "skip", "no definido")
+
+  if callable(ns.get("Heap")):
+    try:
+      heap = ns["Heap"](20)
+      for value in [55, 50, 70, 12, 36, 10, 21, 24, 20, 62]:
+        heap.insert(value)
+      heap.modificar(4, 65)
+      heap.modificar(3, 15)
+      values = [heap.a[index] for index in range(heap.n)]
+      expect_true("cap5.heap.modificar", _duo_is_max_heap(values), f"heap inválido: {values!r}")
+    except Exception as exc:
+      record("cap5.heap.modificar", "fail", f"{type(exc).__name__}: {exc}")
+  else:
+    record("cap5.heap.modificar", "skip", "Heap no definida")
+
+  # Capítulo 6
+  if callable(ns.get("Arbol")) and callable(ns.get("Nodoi")) and callable(ns.get("Nodoe")):
+    try:
+      tree = ns["Arbol"](
+        ns["Nodoi"](
+          ns["Nodoi"](
+            ns["Nodoi"](ns["Nodoe"](), 15, ns["Nodoe"]()),
+            20,
+            ns["Nodoi"](ns["Nodoe"](), 30, ns["Nodoe"]())
+          ),
+          42,
+          ns["Nodoi"](
+            ns["Nodoi"](
+              ns["Nodoi"](
+                ns["Nodoi"](ns["Nodoe"](), 65, ns["Nodoe"]()),
+                72,
+                ns["Nodoi"](ns["Nodoe"](), 81, ns["Nodoe"]())
+              ),
+              90,
+              ns["Nodoe"]()
+            ),
+            95,
+            ns["Nodoi"](ns["Nodoe"](), 100, ns["Nodoi"](ns["Nodoe"](), 105, ns["Nodoe"]()))
+          )
+        )
+      )
+      if callable(getattr(tree, "LCA", None)):
+        expect_equal("cap6.LCA.1", tree.LCA(65, 81), 72)
+        expect_equal("cap6.LCA.2", tree.LCA(30, 65), 42)
+        expect_equal("cap6.LCA.3", tree.LCA(95, 105), 95)
+      else:
+        record("cap6.LCA", "skip", "método no definido")
+    except Exception as exc:
+      record("cap6.LCA", "fail", f"{type(exc).__name__}: {exc}")
+  else:
+    record("cap6.LCA", "skip", "clases no definidas")
+
+  if callable(ns.get("Arbol")) and callable(ns.get("Nodoi")) and callable(ns.get("Nodoe")):
+    try:
+      a = ns["Arbol"](ns["Nodoi"](ns["Nodoi"](ns["Nodoi"](ns["Nodoe"](), 10, ns["Nodoe"]()), 25, ns["Nodoi"](ns["Nodoe"](), 40, ns["Nodoe"]())), 50, ns["Nodoi"](ns["Nodoi"](ns["Nodoe"](), 12, ns["Nodoe"]()), 75, ns["Nodoi"](ns["Nodoe"](), 90, ns["Nodoe"]()))))
+      b = ns["Arbol"](ns["Nodoi"](ns["Nodoi"](ns["Nodoi"](ns["Nodoi"](ns["Nodoe"](), 8, ns["Nodoe"]()), 15, ns["Nodoi"](ns["Nodoe"](), 22, ns["Nodoe"]())), 30, ns["Nodoi"](ns["Nodoe"](), 45, ns["Nodoe"]())), 60, ns["Nodoi"](ns["Nodoe"](), 80, ns["Nodoi"](ns["Nodoe"](), 95, ns["Nodoi"](ns["Nodoe"](), 110, ns["Nodoe"]())))))
+      c = ns["Arbol"](ns["Nodoi"](ns["Nodoi"](ns["Nodoi"](ns["Nodoe"](), 18, ns["Nodoi"](ns["Nodoe"](), 27, ns["Nodoe"]())), 33, ns["Nodoi"](ns["Nodoe"](), 47, ns["Nodoe"]())), 55, ns["Nodoi"](ns["Nodoi"](ns["Nodoe"](), 62, ns["Nodoe"]()), 70, ns["Nodoi"](ns["Nodoi"](ns["Nodoi"](ns["Nodoe"](), 2, ns["Nodoe"]()), 80, ns["Nodoe"]()), 88, ns["Nodoi"](ns["Nodoe"](), 99, ns["Nodoe"]())))))
+      d = ns["Arbol"](ns["Nodoe"]())
+      if callable(getattr(a, "esABB", None)):
+        expect_equal("cap6.esABB.a", a.esABB(), False)
+        expect_equal("cap6.esABB.b", b.esABB(), True)
+        expect_equal("cap6.esABB.c", c.esABB(), False)
+        expect_equal("cap6.esABB.d", d.esABB(), True)
+      else:
+        record("cap6.esABB", "skip", "método no definido")
+    except Exception as exc:
+      record("cap6.esABB", "fail", f"{type(exc).__name__}: {exc}")
+  else:
+    record("cap6.esABB", "skip", "clases no definidas")
+
+  # Capítulo 7
+  if callable(ns.get("quicksort3")) and np is not None:
+    try:
+      values = np.array([7, 3, 1, 9, 2, 8, 4, 6, 5], dtype=float)
+      ns["quicksort3"](values)
+      expect_true("cap7.quicksort3", bool(np.all(values[:-1] <= values[1:])), f"resultado {values!r}")
+    except Exception as exc:
+      record("cap7.quicksort3", "fail", f"{type(exc).__name__}: {exc}")
+  else:
+    record("cap7.quicksort3", "skip", "no definido o sin numpy")
+
+  if callable(ns.get("merge")):
+    try:
+      merged = list(ns["merge"]([(12,2),(34,1),(56,3),(74,1),(81,1)], [(10,3),(12,5),(65,1),(74,1),(90,3)]))
+      expect_equal("cap7.merge", merged, [(10, 3), (12, 7), (34, 1), (56, 3), (65, 1), (74, 2), (81, 1), (90, 3)])
+    except Exception as exc:
+      record("cap7.merge", "fail", f"{type(exc).__name__}: {exc}")
+  else:
+    record("cap7.merge", "skip", "no definido")
+
+  # Capítulo 8
+  if callable(ns.get("fracaso")):
+    expect_equal("cap8.fracaso", maybe_call("fracaso", "aabaaa"), [0, 0, 1, 0, 1, 2, 2])
+  else:
+    record("cap8.fracaso", "skip", "no definido")
+
+  if callable(ns.get("kmp")):
+    f = [0, 0, 1, 0, 1, 2, 2]
+    expect_equal("cap8.kmp.1", maybe_call("kmp", "aaaabaabaaa", "aabaaa", f), 5)
+    expect_equal("cap8.kmp.2", maybe_call("kmp", "aaaabaabaaabb", "abbaaa", f), None)
+  else:
+    record("cap8.kmp", "skip", "no definido")
+
+  if callable(ns.get("bmh")):
+    expect_equal("cap8.bmh.1", maybe_call("bmh", "estructuras de datos", "datos"), 15)
+    expect_equal("cap8.bmh.2", maybe_call("bmh", "estructuras de datos", "struct"), 1)
+    expect_equal("cap8.bmh.3", maybe_call("bmh", "estructuras de datos", "gatos"), None)
+  else:
+    record("cap8.bmh", "skip", "no definido")
+
+  if callable(ns.get("bms")):
+    expect_equal("cap8.bms.1", maybe_call("bms", "estructuras de datos", "datos"), 15)
+    expect_equal("cap8.bms.2", maybe_call("bms", "estructuras de datos", "struct"), 1)
+    expect_equal("cap8.bms.3", maybe_call("bms", "estructuras de datos", "gatos"), None)
+  else:
+    record("cap8.bms", "skip", "no definido")
+
+  # Capítulo 10
+  if callable(ns.get("DFS")):
+    try:
+      graph_V = ["a", "b", "c", "d"]
+      graph_vecinos = {"a": ["b", "c"], "b": ["d"], "c": ["d"], "d": []}
+      ns["V"] = graph_V
+      ns["vecinos"] = graph_vecinos
+      ns["DFN"] = {v: 0 for v in graph_V}
+      ns["n"] = 0
+      ns["DFS"]("a")
+      expect_true("cap10.DFS", all(ns["DFN"][v] > 0 for v in graph_V), f"DFN={ns['DFN']!r}")
+    except Exception as exc:
+      record("cap10.DFS", "fail", f"{type(exc).__name__}: {exc}")
+  else:
+    record("cap10.DFS", "skip", "no definido")
+
+  if callable(ns.get("startDFS")):
+    try:
+      graph_V = ["a", "b", "c", "d", "e"]
+      graph_vecinos = {"a": ["b"], "b": [], "c": ["d"], "d": ["c"], "e": []}
+      ns["V"] = graph_V
+      ns["vecinos"] = graph_vecinos
+      ns["DFN"] = {v: 0 for v in graph_V}
+      ns["n"] = 0
+      params = len(inspect.signature(ns["startDFS"]).parameters)
+      if params == 0:
+        expect_equal("cap10.startDFS.0", ns["startDFS"](), 3)
+      else:
+        ns["startDFS"]("a")
+        expect_true("cap10.startDFS.1", ns["DFN"]["a"] > 0)
+    except Exception as exc:
+      record("cap10.startDFS", "fail", f"{type(exc).__name__}: {exc}")
+  else:
+    record("cap10.startDFS", "skip", "no definido")
+
+  print(f"[summary] {passed} OK, {failed} FAIL, {skipped} SKIP")
+  return failed == 0
+
+    `);
+
         pythonVersion = await pyodide.runPythonAsync(`
 import sys
 f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 `);
 
-        await pyodide.runPythonAsync("import math, random, statistics");
+        await pyodide.loadPackage(["micropip", "numpy"]);
+
+        await pyodide.runPythonAsync("import math, random, statistics, micropip, numpy");
       status.textContent = "";
       status.className = "status";
       clearTerminal();
@@ -465,11 +983,10 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     async function runBlock(code) {
       if (!code || !String(code).trim()) return;
 
-      appendInputLine(code);
-
       try {
+        await ensureRuntime();
         pyodide.globals.set("__duo_code", String(code));
-        const result = await pyodide.runPythonAsync("_duo_run(__duo_code)");
+        const result = await pyodide.runPythonAsync("await _duo_exec_file(__duo_code)");
         pyodide.globals.delete("__duo_code");
         if (result !== undefined && result !== null) {
           appendOutput(String(result));
@@ -486,7 +1003,7 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
       await ensureRuntime();
       try {
         pyodide.globals.set("__duo_code", line);
-        const result = await pyodide.runPythonAsync("_duo_run(__duo_code)");
+        const result = await pyodide.runPythonAsync("await _duo_run_line(__duo_code)");
         pyodide.globals.delete("__duo_code");
         if (result !== undefined && result !== null) {
           appendOutput(String(result));
@@ -520,12 +1037,22 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     });
 
     window.addEventListener("message", async (event) => {
-      if (event.origin !== window.location.origin) return;
       const data = event.data || {};
 
       if (data.type === "duo-exec") {
         await ensureRuntime();
         await runBlock(data.code);
+      } else if (data.type === "duo-test") {
+        await ensureRuntime();
+        try {
+          pyodide.globals.set("__duo_code", String(data.code || ""));
+          const ok = await pyodide.runPythonAsync("await _duo_run_mega_tests(__duo_code)");
+          pyodide.globals.delete("__duo_code");
+          notifyParent({ type: "duo-test-done", ok: Boolean(ok) });
+        } catch (e) {
+          appendOutput(String(e));
+          notifyParent({ type: "duo-test-done", ok: false });
+        }
       } else if (data.type === "duo-clear") {
         clearTerminal();
         renderInitialBanner();

@@ -38,14 +38,18 @@ JupyterLite corre **completamente en tu navegador** usando WebAssembly (Pyodide)
 
 ## Alternativa con micropip
 
-Si necesitas instalar un paquete que **SÍ existe en PyPI** con wheels compatibles:
+En el Duo Python Lab ya puedes usar:
 
 ```python
 import micropip
 await micropip.install('nombre-paquete')
 ```
 
-⚠️ No todos los paquetes son compatibles con Pyodide.
+También están pre-cargados paquetes comunes del canal Pyodide como `numpy`.
+
+Además, cuando el editor o la consola encuentran un `ImportError` en un módulo conocido, intentan resolverlo por detrás cargando el paquete correspondiente con `pyodide_js.loadPackage(...)` y, si hace falta, con `micropip`.
+
+⚠️ No todos los paquetes de PyPI son compatibles con Pyodide; si uno falla, normalmente es por dependencias nativas o ruedas no compatibles.
 
 ---
 

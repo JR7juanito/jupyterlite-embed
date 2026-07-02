@@ -13,6 +13,8 @@ Notebooks interactivos del curso de **Algoritmos y Estructuras de Datos** basado
 ### 🧪 Duo Python Lab (Editor + Consola)
 
 - **[⚡ Abrir Duo Editor-Consola](https://jr7juanito.github.io/jupyterlite-embed/duo/)** - Editor Python con Pyodide + consola REPL de JupyterLite en paralelo
+- **Pruebas AED** - botón integrado para ejecutar una batería de verificación sobre ejercicios representativos de los apuntes
+- **Paquetes PyPI** - soporte para `import micropip` y `await micropip.install(...)` en el editor y en la consola, además de carga automática de paquetes cuando un `import` falla (`numpy`, `sympy`, `biopython`, etc.)
 - **[🧩 Ver ejemplo embebido](https://jr7juanito.github.io/jupyterlite-embed/duo-embed-example.html)** - Demo lista para copiar iframe
 
 ### 📊 MEGRÁFICA - Notebook Personalizado

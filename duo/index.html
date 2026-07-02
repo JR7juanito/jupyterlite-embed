@@ -118,6 +118,17 @@
       border-color: #3a5688;
     }
 
+    .test {
+      border-color: #496f45;
+      background: #14291d;
+      color: #d7f7cb;
+    }
+
+    .test:hover {
+      background: #183321;
+      border-color: #5f8a58;
+    }
+
     #editor {
       width: 100%;
       height: 100%;
@@ -268,6 +279,7 @@
         <span>Editor (multiplataforma)</span>
         <div class="btns">
           <button class="run" id="runBtn">Ejecutar</button>
+          <button class="test" id="testBtn">Pruebas AED</button>
           <button id="importBtn">Importar</button>
           <button id="pasteBtn">Pegar</button>
           <button id="clearBtn">Limpiar hoja</button>
@@ -285,6 +297,7 @@
     const editorRoot = document.getElementById("editorSurface");
     const status = document.getElementById("status");
     const runBtn = document.getElementById("runBtn");
+    const testBtn = document.getElementById("testBtn");
     const importBtn = document.getElementById("importBtn");
     const pasteBtn = document.getElementById("pasteBtn");
     const clearBtn = document.getElementById("clearBtn");
@@ -387,7 +400,7 @@ Escriba, pruebe e itere sin guardar archivos.
 
       while (pendingMessages.length > 0) {
         const msg = pendingMessages.shift();
-        consoleFrame.contentWindow.postMessage(msg, bridgeOrigin);
+        consoleFrame.contentWindow.postMessage(msg, "*");
       }
     }
 
@@ -402,7 +415,7 @@ Escriba, pruebe e itere sin guardar archivos.
         return true;
       }
 
-      consoleFrame.contentWindow.postMessage(message, bridgeOrigin);
+      consoleFrame.contentWindow.postMessage(message, "*");
       return true;
     }
 
@@ -421,8 +434,22 @@ Escriba, pruebe e itere sin guardar archivos.
       }
     }
 
+    async function runTests() {
+      if (!monacoEditor) return;
+      const code = monacoEditor.getValue();
+      if (!code.trim()) return;
+
+      if (!consoleReady) {
+        status.textContent = "Esperando consola...";
+      }
+
+      const ok = sendToConsole({ type: "duo-test", code });
+      if (ok) {
+        status.textContent = "Pruebas AED enviadas";
+      }
+    }
+
     window.addEventListener("message", (event) => {
-      if (event.origin !== bridgeOrigin) return;
       const data = event.data || {};
 
       if (data.type === "duo-ready") {
@@ -431,12 +458,15 @@ Escriba, pruebe e itere sin guardar archivos.
         status.textContent = "Consola conectada";
       } else if (data.type === "duo-exec-done") {
         status.textContent = data.ok ? "Ejecucion completada" : "Error en consola";
+      } else if (data.type === "duo-test-done") {
+        status.textContent = data.ok ? "Pruebas AED completadas" : "Pruebas AED con fallos";
       } else if (data.type === "duo-reset-done") {
         status.textContent = "Runtime reiniciado";
       }
     });
 
     runBtn.addEventListener("click", runCode);
+    testBtn.addEventListener("click", runTests);
     importBtn.addEventListener("click", () => importInput.click());
     importInput.addEventListener("change", async () => {
       if (!monacoEditor || !importInput.files || !importInput.files.length) return;
