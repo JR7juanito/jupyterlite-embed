@@ -86,11 +86,11 @@
     }
 
     .prompt-row {
-      grid-template-columns: 4ch max-content auto;
+      grid-template-columns: 4ch minmax(0, 1fr);
       align-items: center;
       white-space: pre;
-      width: max-content;
-      min-width: max-content;
+      width: 100%;
+      min-width: 100%;
       padding-top: 0.1rem;
       padding-bottom: 0.1rem;
     }
@@ -105,6 +105,21 @@
       -webkit-user-select: text;
       word-break: normal;
       overflow-wrap: normal;
+    }
+
+    .live-input.prompt-input {
+      width: 100%;
+      height: 1.45em;
+      line-height: 1.45;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      padding: 0;
+      margin: 0;
+      vertical-align: middle;
+      direction: ltr;
+      unicode-bidi: plaintext;
+      text-align: left;
     }
 
     .live-input:empty::before {
@@ -243,9 +258,13 @@
       scrollToBottom();
     }
 
-    function syncEntry() {
+    function updateInputMirror() {
       cmd.value = currentBuffer;
-      if (promptText) promptText.textContent = currentBuffer;
+    }
+
+    function renderPromptBuffer() {
+      updateInputMirror();
+      if (promptText) promptText.value = currentBuffer;
       scrollToBottom();
     }
 
@@ -263,12 +282,10 @@
     }
 
     function placeCaretAtEnd(element) {
-      const selection = window.getSelection();
-      const range = document.createRange();
-      range.selectNodeContents(element);
-      range.collapse(false);
-      selection.removeAllRanges();
-      selection.addRange(range);
+      if (typeof element.setSelectionRange === "function") {
+        const length = element.value.length;
+        element.setSelectionRange(length, length);
+      }
     }
 
     function scrollToBottom() {
@@ -286,20 +303,26 @@
         prefixSpan.className = "prefix";
         prefixSpan.textContent = ">>>";
 
-        promptText = document.createElement("span");
-        promptText.className = "payload live-input";
-        promptText.contentEditable = "true";
+        promptText = document.createElement("input");
+        promptText.type = "text";
+        promptText.className = "payload live-input prompt-input";
         promptText.spellcheck = false;
         promptText.autocapitalize = "off";
-        promptText.textContent = currentBuffer;
+        promptText.value = currentBuffer;
 
         promptRow.appendChild(prefixSpan);
         promptRow.appendChild(promptText);
         promptText.addEventListener("input", () => {
-          currentBuffer = promptText.textContent || "";
-          syncEntry();
+          currentBuffer = promptText.value || "";
+          updateInputMirror();
         });
         promptText.addEventListener("focus", () => {
+          requestAnimationFrame(() => {
+            if (promptText) {
+              const length = promptText.value.length;
+              promptText.setSelectionRange(length, length);
+            }
+          });
           scrollToBottom();
         });
         promptText.addEventListener("keydown", async (ev) => {
@@ -308,21 +331,21 @@
             const line = currentBuffer;
             if (!line.trim()) {
               currentBuffer = "";
-              syncEntry();
+              renderPromptBuffer();
               return;
             }
             history.push(line);
             histIx = history.length;
             appendInputLine(line);
             currentBuffer = "";
-            syncEntry();
+            renderPromptBuffer();
             await runLine(line);
           } else if (ev.key === "ArrowUp") {
             if (histIx > 0) {
               ev.preventDefault();
               histIx -= 1;
               currentBuffer = history[histIx] || "";
-              syncEntry();
+              renderPromptBuffer();
               placeCaretAtEnd(promptText);
             }
           } else if (ev.key === "ArrowDown") {
@@ -330,19 +353,19 @@
               ev.preventDefault();
               histIx += 1;
               currentBuffer = history[histIx] || "";
-              syncEntry();
+              renderPromptBuffer();
               placeCaretAtEnd(promptText);
             } else if (histIx >= history.length - 1) {
               ev.preventDefault();
               histIx = history.length;
               currentBuffer = "";
-              syncEntry();
+              renderPromptBuffer();
               placeCaretAtEnd(promptText);
             }
           }
         });
-        promptText.addEventListener("pointerdown", () => {
-          focusTerminal();
+        promptText.addEventListener("pointerdown", (ev) => {
+          ev.stopPropagation();
         });
       }
 
@@ -369,7 +392,7 @@
     function clearTerminal() {
       out.textContent = "";
       currentBuffer = "";
-      syncEntry();
+      renderPromptBuffer();
       history = [];
       histIx = -1;
       ensurePromptRow();
@@ -1062,7 +1085,7 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
       }
     });
 
-    syncEntry();
+    renderPromptBuffer();
     bootPromise = boot();
   </script>
 </body>
