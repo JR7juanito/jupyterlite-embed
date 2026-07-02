@@ -145,6 +145,19 @@
       out.scrollTop = out.scrollHeight;
     }
 
+    function clearTerminal() {
+      out.textContent = "";
+      cmd.value = "";
+      history = [];
+      histIx = -1;
+    }
+
+    function renderInitialBanner() {
+      log(`Python ${pythonVersion} (smartPato/TrustNoOne!:journal3, Jun 15 1982, 04:20:51)`, "sys");
+      log("[MSC v.618 64-bit (JUNK64)] on file://Oregon/GravityFalls/MysteryShack/McGucketLaptop", "sys");
+      log("[system] Runtime listo. Modulos base: math, random, statistics", "sys");
+    }
+
     function notifyParent(message) {
       if (window.parent && window.parent !== window) {
         window.parent.postMessage(message, window.location.origin);
@@ -180,9 +193,8 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         await pyodide.runPythonAsync("import math, random, statistics");
       status.textContent = "Listo";
       status.className = "status";
-      log(`Python ${pythonVersion} (smartPato/TrustNoOne!:journal3, Jun 15 1982, 04:20:51)`, "sys");
-      log("[MSC v.618 64-bit (JUNK64)] on file://Oregon/GravityFalls/MysteryShack/McGucketLaptop", "sys");
-      log("[system] Runtime listo. Modulos base: math, random, statistics", "sys");
+      clearTerminal();
+      renderInitialBanner();
       cmd.focus();
       notifyParent({ type: "duo-ready" });
     }
@@ -226,15 +238,16 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         }
       } catch (e) {
         log(String(e), "err");
-          async function resetSession() {
-            await ensureRuntime();
-            await pyodide.runPythonAsync("_duo_reset()");
-            log("[system] Sesion reiniciada", "sys");
-            notifyParent({ type: "duo-reset-done" });
-            cmd.focus();
-          }
-
       }
+    }
+
+    async function resetSession() {
+      await ensureRuntime();
+      await pyodide.runPythonAsync("_duo_reset()");
+      clearTerminal();
+      renderInitialBanner();
+      notifyParent({ type: "duo-reset-done" });
+      cmd.focus();
     }
 
     cmd.addEventListener("keydown", async (ev) => {
@@ -263,12 +276,13 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     });
 
     clearBtn.addEventListener("click", () => {
-      out.textContent = "";
-      log("[system] Consola limpia", "sys");
+      clearTerminal();
+      renderInitialBanner();
+      cmd.focus();
     });
 
     resetBtn.addEventListener("click", async () => {
-      out.textContent = "";
+      clearTerminal();
       log("[system] Reiniciando runtime...", "warn");
       await resetSession();
     });
@@ -281,10 +295,11 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         await ensureRuntime();
         await runBlock(data.code);
       } else if (data.type === "duo-clear") {
-        out.textContent = "";
-        log("[system] Consola limpia", "sys");
+        clearTerminal();
+        renderInitialBanner();
+        cmd.focus();
       } else if (data.type === "duo-reset") {
-        out.textContent = "";
+        clearTerminal();
         log("[system] Reiniciando runtime...", "warn");
         await resetSession();
       }
