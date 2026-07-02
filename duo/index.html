@@ -123,8 +123,7 @@
       height: 100%;
       min-height: 0;
       position: relative;
-      display: flex;
-      padding: 4em;
+      display: block;
       box-shadow: 2px 3px 20px black, 0 0 60px #8a4d0f inset;
       background: transparent;
       overflow: hidden;
@@ -172,9 +171,9 @@
     }
 
     #editorSurface {
-      position: relative;
+      position: absolute;
+      inset: 18px 18px 22px 18px;
       z-index: 1;
-      width: 100%;
       min-width: 0;
       min-height: 0;
       background: transparent;
@@ -196,6 +195,27 @@
     #editorSurface .monaco-editor .view-line,
     #editorSurface .monaco-editor .view-line span {
       font-family: Consolas, "Courier New", monospace !important;
+    }
+
+    #editorSurface .monaco-editor,
+    #editorSurface .monaco-editor .overflow-guard,
+    #editorSurface .monaco-editor .monaco-scrollable-element {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    #editorSurface .monaco-editor.focused,
+    #editorSurface .monaco-editor.focused .overflow-guard,
+    #editorSurface .monaco-editor.focused .monaco-scrollable-element {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    #editorSurface .monaco-editor .current-line,
+    #editorSurface .monaco-editor .view-overlays .current-line,
+    #editorSurface .monaco-editor .line-highlight {
+      background: transparent !important;
+      border: 0 !important;
     }
 
     #editorSurface .monaco-editor .line-numbers {
