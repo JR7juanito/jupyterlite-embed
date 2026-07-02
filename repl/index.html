@@ -9,11 +9,11 @@
       --bg: #0b4ea2;
       --panel: #0a3f86;
       --line: rgba(255, 255, 255, 0.18);
-      --text: #ffffff;
-      --muted: rgba(255, 255, 255, 0.85);
-      --accent: #ff5a52;
-      --warn: #ffe28a;
-      --err: #ffd1d1;
+      --text: #b7ffb0;
+      --muted: #7ddf78;
+      --accent: #8cff7f;
+      --warn: #d6ff7a;
+      --err: #d7ffcf;
     }
 
     * { box-sizing: border-box; }
@@ -76,7 +76,7 @@
     }
 
     .prompt {
-      color: #ffd54a;
+      color: var(--accent);
       font-weight: 700;
       user-select: none;
     }
@@ -96,7 +96,7 @@
 
     input:focus { border-color: rgba(255, 255, 255, 0.45); }
 
-    .sys { color: rgba(255, 255, 255, 0.88); }
+    .sys { color: var(--muted); }
     .err { color: var(--err); }
     .warn { color: var(--warn); }
   </style>
@@ -131,6 +131,7 @@
     let bootPromise = null;
     let history = [];
     let histIx = -1;
+    let pythonVersion = "3.x.x";
 
     if (isEmbedded) {
       document.title = "Consola Pyodide Conectada";
@@ -171,9 +172,16 @@
       _DUO_GLOBALS["__name__"] = "__main__"
     `);
 
+        pythonVersion = await pyodide.runPythonAsync(`
+import sys
+f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+`);
+
         await pyodide.runPythonAsync("import math, random, statistics");
       status.textContent = "Listo";
       status.className = "status";
+      log(`Python ${pythonVersion} (smartPato/TrustNoOne!:journal3, Jun 15 1982, 04:20:51)`, "sys");
+      log("[MSC v.618 64-bit (JUNK64)] on file://Oregon/GravityFalls/MysteryShack/McGucketLaptop", "sys");
       log("[system] Runtime listo. Modulos base: math, random, statistics", "sys");
       cmd.focus();
       notifyParent({ type: "duo-ready" });
