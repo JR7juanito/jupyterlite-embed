@@ -14,12 +14,12 @@
       --accent: #1d5fe0;
       --accent-2: #0da574;
       --danger: #d63b56;
-      --parchment-base: #f4ead1;
-      --parchment-wash: rgba(255, 255, 255, 0.58);
-      --parchment-shadow: rgba(132, 101, 42, 0.16);
-      --parchment-ink: #2d2418;
-      --parchment-muted: #6d5a43;
-      --parchment-border: #d7c195;
+      --parchment-base: #ecd38e;
+      --parchment-light: #f7e7ad;
+      --parchment-shadow: rgba(128, 88, 26, 0.18);
+      --parchment-ink: #2f2517;
+      --parchment-muted: #6b5639;
+      --parchment-border: #cfb06d;
     }
 
     * { box-sizing: border-box; }
@@ -124,15 +124,18 @@
       min-height: 0;
       position: relative;
       background:
-        radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.55) 0, rgba(255, 255, 255, 0.18) 18%, transparent 36%),
-        radial-gradient(circle at 82% 8%, rgba(162, 122, 59, 0.16) 0, transparent 30%),
-        radial-gradient(circle at 86% 86%, rgba(163, 122, 56, 0.14) 0, transparent 28%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.32) 0%, transparent 28%),
-        linear-gradient(0deg, rgba(124, 89, 39, 0.08), rgba(124, 89, 39, 0.08)),
-        repeating-linear-gradient(90deg, rgba(123, 93, 43, 0.06) 0 1px, transparent 1px 28px),
-        repeating-linear-gradient(0deg, rgba(123, 93, 43, 0.04) 0 1px, transparent 1px 24px),
-        linear-gradient(180deg, #f8efda 0%, var(--parchment-base) 100%);
-      border-top: 1px solid rgba(255, 255, 255, 0.15);
+        radial-gradient(circle at 50% 38%, rgba(255, 248, 214, 0.76) 0, rgba(255, 240, 185, 0.34) 26%, transparent 58%),
+        radial-gradient(circle at 19% 20%, rgba(255, 255, 255, 0.30) 0, transparent 18%),
+        radial-gradient(circle at 82% 14%, rgba(181, 133, 56, 0.24) 0, transparent 22%),
+        radial-gradient(circle at 79% 84%, rgba(159, 111, 37, 0.26) 0, transparent 24%),
+        radial-gradient(circle at 15% 86%, rgba(150, 103, 38, 0.22) 0, transparent 20%),
+        linear-gradient(90deg, rgba(90, 62, 22, 0.08) 0 1px, transparent 1px 18px),
+        linear-gradient(0deg, rgba(120, 82, 30, 0.05) 0 1px, transparent 1px 22px),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.32) 0%, transparent 32%),
+        linear-gradient(90deg, transparent 0 82%, rgba(80, 60, 34, 0.14) 82.3%, transparent 83%),
+        linear-gradient(180deg, #f5e1a6 0%, var(--parchment-base) 48%, #e4c778 100%);
+      border-top: 1px solid rgba(84, 63, 25, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(255, 244, 205, 0.18), inset 0 -30px 42px rgba(128, 84, 18, 0.08);
     }
 
     #editor .monaco-editor,
@@ -248,25 +251,29 @@ Escriba, pruebe e itere sin guardar archivos.
             base: "vs",
             inherit: true,
             rules: [
-              { token: "comment", foreground: "7d6a4f", fontStyle: "italic" },
-              { token: "keyword", foreground: "7a1f1f", fontStyle: "bold" },
-              { token: "number", foreground: "964b00" },
-              { token: "string", foreground: "0e5f3a" },
-              { token: "delimiter", foreground: "5f4a2d" },
-              { token: "type.identifier", foreground: "224f8c" },
-              { token: "identifier", foreground: "2d2418" }
+              { token: "comment", foreground: "8a734d", fontStyle: "italic" },
+              { token: "keyword", foreground: "7a2b10", fontStyle: "bold" },
+              { token: "number", foreground: "9a5d12" },
+              { token: "string", foreground: "0f6a45" },
+              { token: "delimiter", foreground: "6b5534" },
+              { token: "type.identifier", foreground: "2e5b96" },
+              { token: "identifier", foreground: "2f2517" }
             ],
             colors: {
-              "editor.background": "#f4ead1",
-              "editor.foreground": "#2d2418",
-              "editorLineNumber.foreground": "#8d7a5b",
-              "editorLineNumber.activeForeground": "#5d4b33",
-              "editorCursor.foreground": "#2d2418",
-              "editor.selectionBackground": "#d8c89c",
-              "editor.inactiveSelectionBackground": "#e6dcc2",
-              "editor.lineHighlightBackground": "#f9f0da",
-              "editorIndentGuide.background1": "#d6c7a7",
-              "editorIndentGuide.activeBackground1": "#bda97f"
+              "editor.background": "#ecd38e",
+              "editor.foreground": "#2f2517",
+              "editorLineNumber.foreground": "#8f7952",
+              "editorLineNumber.activeForeground": "#5f4b2f",
+              "editorCursor.foreground": "#2f2517",
+              "editor.selectionBackground": "#d7bc76",
+              "editor.inactiveSelectionBackground": "#eadfae",
+              "editor.lineHighlightBackground": "#f4e2aa",
+              "editorIndentGuide.background1": "#cab07a",
+              "editorIndentGuide.activeBackground1": "#b19254",
+              "scrollbar.shadow": "#00000000",
+              "scrollbarSlider.background": "#9b824f66",
+              "scrollbarSlider.hoverBackground": "#8c744c88",
+              "scrollbarSlider.activeBackground": "#7f684899"
             }
           });
 
