@@ -140,6 +140,10 @@
       overflow: hidden;
     }
 
+    .touch-safe #editor {
+      box-shadow: 2px 3px 16px rgba(0, 0, 0, 0.35);
+    }
+
     #editor .parchment-layer {
       position: absolute;
       inset: 0;
@@ -148,6 +152,12 @@
       background: #fffef0;
       box-shadow: inset 0 0 60px #8a4d0f;
       filter: url(#wavy2);
+    }
+
+    .touch-safe #editor .parchment-layer {
+      filter: none;
+      box-shadow: inset 0 0 42px rgba(138, 77, 15, 0.65);
+      opacity: 0.92;
     }
 
     #editor .parchment-layer::before,
@@ -205,6 +215,17 @@
     #editorSurface .monaco-editor .view-line,
     #editorSurface .monaco-editor .view-line span {
       font-family: Consolas, "Courier New", monospace !important;
+    }
+
+    .touch-safe #editorSurface .monaco-editor,
+    .touch-safe #editorSurface .monaco-editor-background,
+    .touch-safe #editorSurface .overflow-guard,
+    .touch-safe #editorSurface .monaco-scrollable-element,
+    .touch-safe #editorSurface .margin,
+    .touch-safe #editorSurface .inputarea,
+    .touch-safe #editorSurface .monaco-editor .view-overlays,
+    .touch-safe #editorSurface .monaco-editor .view-lines {
+      background: #fffef0 !important;
     }
 
     #editorSurface .monaco-editor,
@@ -301,6 +322,11 @@
     const clearBtn = document.getElementById("clearBtn");
     const consoleFrame = document.getElementById("consoleFrame");
     const importInput = document.createElement("input");
+    const touchSafe = window.matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 1 || /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    if (touchSafe) {
+      document.documentElement.classList.add("touch-safe");
+    }
 
     const bridgeOrigin = window.location.origin;
     let consoleReady = false;
@@ -378,6 +404,9 @@ Escriba, pruebe e itere sin guardar archivos.
             lineDecorationsWidth: 14,
             lineNumbersMinChars: 3,
             scrollBeyondLastColumn: 8,
+            cursorBlinking: touchSafe ? "solid" : "blink",
+            cursorSmoothCaretAnimation: touchSafe ? "off" : "on",
+            experimentalGpuAcceleration: touchSafe ? "off" : "on",
             scrollbar: {
               vertical: "auto",
               horizontal: "auto",
