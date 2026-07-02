@@ -25,7 +25,7 @@
       color: var(--text);
       font-family: Consolas, "Courier New", monospace;
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-rows: auto minmax(0, 1fr);
       overflow: hidden;
       overscroll-behavior: none;
     }
@@ -85,6 +85,16 @@
       flex: 0 0 auto;
     }
 
+    .prompt-row {
+      grid-template-columns: 4ch minmax(0, 1fr) auto;
+      align-items: center;
+      white-space: pre;
+      width: max-content;
+      min-width: 100%;
+      padding-top: 0.1rem;
+      padding-bottom: 0.1rem;
+    }
+
     .banner {
       display: block;
       white-space: nowrap;
@@ -108,29 +118,6 @@
       white-space: pre;
       overflow-wrap: normal;
       min-width: max-content;
-    }
-
-    .terminal-input {
-      border-top: 1px solid var(--line);
-      padding: 10px 14px;
-      background: var(--panel);
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 10px;
-      align-items: center;
-      min-height: 52px;
-    }
-
-    .terminal-input:focus-within {
-      border-top-color: rgba(255, 255, 255, 0.35);
-    }
-
-    .entry-text {
-      color: var(--text);
-      white-space: pre;
-      overflow: hidden;
-      text-overflow: clip;
-      min-width: 0;
       min-height: 1.45em;
     }
 
@@ -155,8 +142,8 @@
       pointer-events: none;
     }
 
-    .terminal-input,
-    .terminal-input * {
+    .prompt-row,
+    .prompt-row * {
       cursor: text;
     }
 
@@ -189,13 +176,7 @@
     </div>
   </header>
 
-  <pre id="out"></pre>
-
-  <div class="terminal-input" id="terminalInput" tabindex="0" role="textbox" aria-label="Entrada de Python">
-    <span class="prompt">&gt;&gt;&gt;</span>
-    <span class="entry-text" id="entryText"></span>
-    <span class="cursor">|</span>
-  </div>
+  <div id="out" aria-live="polite"></div>
 
   <input id="cmd" class="sr-input" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text" aria-hidden="true" />
 
@@ -204,8 +185,6 @@
 
     const isEmbedded = new URLSearchParams(window.location.search).get("embedded") === "1";
     const out = document.getElementById("out");
-    const terminalInput = document.getElementById("terminalInput");
-    const entryText = document.getElementById("entryText");
     const cmd = document.getElementById("cmd");
     const status = document.getElementById("status");
     const clearBtn = document.getElementById("clear");
@@ -217,16 +196,19 @@
     let histIx = -1;
     let pythonVersion = "3.x.x";
     let currentBuffer = "";
+    let promptRow = null;
+    let promptText = null;
+    let promptCursor = null;
 
     if (isEmbedded) {
       document.title = "Consola Pyodide Conectada";
     }
 
     function appendBannerLine(msg) {
-      const span = document.createElement("span");
+      const span = document.createElement("div");
       span.className = "banner";
       span.textContent = msg;
-      out.appendChild(span);
+      insertBeforePrompt(span);
     }
 
     function appendPromptLine(prefix, msg, cls = "payload") {
@@ -243,17 +225,61 @@
 
       row.appendChild(prefixSpan);
       row.appendChild(textSpan);
-      out.appendChild(row);
-      out.scrollTop = out.scrollHeight;
+      insertBeforePrompt(row);
+      scrollToBottom();
     }
 
     function syncEntry() {
-      entryText.textContent = currentBuffer;
       cmd.value = currentBuffer;
+      if (promptText) promptText.textContent = currentBuffer;
+      scrollToBottom();
     }
 
     function focusTerminal() {
       cmd.focus({ preventScroll: true });
+    }
+
+    function scrollToBottom() {
+      requestAnimationFrame(() => {
+        out.scrollTop = out.scrollHeight;
+      });
+    }
+
+    function ensurePromptRow() {
+      if (!promptRow) {
+        promptRow = document.createElement("div");
+        promptRow.className = "prompt-row line";
+
+        const prefixSpan = document.createElement("span");
+        prefixSpan.className = "prefix";
+        prefixSpan.textContent = ">>>";
+
+        promptText = document.createElement("span");
+        promptText.className = "payload";
+        promptText.textContent = currentBuffer;
+
+        promptCursor = document.createElement("span");
+        promptCursor.className = "cursor";
+        promptCursor.textContent = "|";
+
+        promptRow.appendChild(prefixSpan);
+        promptRow.appendChild(promptText);
+        promptRow.appendChild(promptCursor);
+        promptRow.addEventListener("pointerdown", () => {
+          focusTerminal();
+        });
+      }
+
+      if (!promptRow.isConnected) {
+        out.appendChild(promptRow);
+      }
+
+      return promptRow;
+    }
+
+    function insertBeforePrompt(node) {
+      ensurePromptRow();
+      out.insertBefore(node, promptRow);
     }
 
     function appendInputLine(msg) {
@@ -270,6 +296,7 @@
       syncEntry();
       history = [];
       histIx = -1;
+      ensurePromptRow();
     }
 
     function renderInitialBanner() {
@@ -348,7 +375,7 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
       status.className = "status";
       clearTerminal();
       renderInitialBanner();
-      cmd.focus();
+      focusTerminal();
       notifyParent({ type: "duo-ready" });
     }
 
@@ -361,8 +388,6 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 
     async function runBlock(code) {
       if (!code || !String(code).trim()) return;
-
-      appendInputLine(code);
 
       try {
         pyodide.globals.set("__duo_code", String(code));
@@ -400,7 +425,7 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
       clearTerminal();
       renderInitialBanner();
       notifyParent({ type: "duo-reset-done" });
-      cmd.focus();
+      focusTerminal();
     }
 
     cmd.addEventListener("keydown", async (ev) => {
@@ -414,9 +439,9 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         }
         history.push(line);
         histIx = history.length;
+        appendInputLine(line);
         currentBuffer = "";
         syncEntry();
-        appendInputLine(line);
         await runLine(line);
         ev.preventDefault();
       } else if (ev.key === "ArrowUp") {
@@ -443,10 +468,6 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     cmd.addEventListener("input", () => {
       currentBuffer = cmd.value;
       syncEntry();
-    });
-
-    terminalInput.addEventListener("pointerdown", () => {
-      focusTerminal();
     });
 
     out.addEventListener("pointerdown", () => {
