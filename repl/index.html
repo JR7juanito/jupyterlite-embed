@@ -95,13 +95,30 @@
       padding-bottom: 0.1rem;
     }
 
+    .live-input {
+      display: inline-block;
+      min-width: 1ch;
+      outline: none;
+      white-space: pre;
+      caret-color: var(--accent);
+      user-select: text;
+      -webkit-user-select: text;
+      word-break: normal;
+      overflow-wrap: normal;
+    }
+
+    .live-input:empty::before {
+      content: "";
+    }
+
+    .live-input::selection {
+      background: rgba(140, 255, 127, 0.35);
+      color: var(--text);
+    }
+
     .prompt-row .payload {
       width: max-content;
       min-width: 0;
-    }
-
-    .prompt-row .cursor {
-      margin-left: 0;
     }
 
     .banner {
@@ -128,17 +145,6 @@
       overflow-wrap: normal;
       min-width: max-content;
       min-height: 1.45em;
-    }
-
-    .cursor {
-      color: var(--accent);
-      font-weight: 700;
-      user-select: none;
-      animation: blink 1s steps(1, end) infinite;
-    }
-
-    @keyframes blink {
-      50% { opacity: 0; }
     }
 
     .sr-input {
@@ -207,7 +213,6 @@
     let currentBuffer = "";
     let promptRow = null;
     let promptText = null;
-    let promptCursor = null;
 
     if (isEmbedded) {
       document.title = "Consola Pyodide Conectada";
@@ -245,7 +250,25 @@
     }
 
     function focusTerminal() {
-      cmd.focus({ preventScroll: true });
+      if (promptText) {
+        promptText.focus({ preventScroll: true });
+        requestAnimationFrame(() => {
+          if (promptText) {
+            placeCaretAtEnd(promptText);
+          }
+        });
+      } else {
+        cmd.focus({ preventScroll: true });
+      }
+    }
+
+    function placeCaretAtEnd(element) {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
     }
 
     function scrollToBottom() {
@@ -264,17 +287,61 @@
         prefixSpan.textContent = ">>>";
 
         promptText = document.createElement("span");
-        promptText.className = "payload";
+        promptText.className = "payload live-input";
+        promptText.contentEditable = "true";
+        promptText.spellcheck = false;
+        promptText.autocapitalize = "off";
         promptText.textContent = currentBuffer;
-
-        promptCursor = document.createElement("span");
-        promptCursor.className = "cursor";
-        promptCursor.textContent = "|";
 
         promptRow.appendChild(prefixSpan);
         promptRow.appendChild(promptText);
-        promptRow.appendChild(promptCursor);
-        promptRow.addEventListener("pointerdown", () => {
+        promptText.addEventListener("input", () => {
+          currentBuffer = promptText.textContent || "";
+          syncEntry();
+        });
+        promptText.addEventListener("focus", () => {
+          scrollToBottom();
+        });
+        promptText.addEventListener("keydown", async (ev) => {
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            const line = currentBuffer;
+            if (!line.trim()) {
+              currentBuffer = "";
+              syncEntry();
+              return;
+            }
+            history.push(line);
+            histIx = history.length;
+            appendInputLine(line);
+            currentBuffer = "";
+            syncEntry();
+            await runLine(line);
+          } else if (ev.key === "ArrowUp") {
+            if (histIx > 0) {
+              ev.preventDefault();
+              histIx -= 1;
+              currentBuffer = history[histIx] || "";
+              syncEntry();
+              placeCaretAtEnd(promptText);
+            }
+          } else if (ev.key === "ArrowDown") {
+            if (histIx < history.length - 1) {
+              ev.preventDefault();
+              histIx += 1;
+              currentBuffer = history[histIx] || "";
+              syncEntry();
+              placeCaretAtEnd(promptText);
+            } else if (histIx >= history.length - 1) {
+              ev.preventDefault();
+              histIx = history.length;
+              currentBuffer = "";
+              syncEntry();
+              placeCaretAtEnd(promptText);
+            }
+          }
+        });
+        promptText.addEventListener("pointerdown", () => {
           focusTerminal();
         });
       }
@@ -398,6 +465,8 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     async function runBlock(code) {
       if (!code || !String(code).trim()) return;
 
+      appendInputLine(code);
+
       try {
         pyodide.globals.set("__duo_code", String(code));
         const result = await pyodide.runPythonAsync("_duo_run(__duo_code)");
@@ -415,7 +484,6 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     async function runLine(line) {
       if (!line.trim()) return;
       await ensureRuntime();
-
       try {
         pyodide.globals.set("__duo_code", line);
         const result = await pyodide.runPythonAsync("_duo_run(__duo_code)");
@@ -436,48 +504,6 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
       notifyParent({ type: "duo-reset-done" });
       focusTerminal();
     }
-
-    cmd.addEventListener("keydown", async (ev) => {
-      if (ev.key === "Enter") {
-        const line = currentBuffer;
-        if (!line.trim()) {
-          ev.preventDefault();
-          currentBuffer = "";
-          syncEntry();
-          return;
-        }
-        history.push(line);
-        histIx = history.length;
-        appendInputLine(line);
-        currentBuffer = "";
-        syncEntry();
-        await runLine(line);
-        ev.preventDefault();
-      } else if (ev.key === "ArrowUp") {
-        if (histIx > 0) {
-          histIx -= 1;
-          currentBuffer = history[histIx] || "";
-          syncEntry();
-        }
-        ev.preventDefault();
-      } else if (ev.key === "ArrowDown") {
-        if (histIx < history.length - 1) {
-          histIx += 1;
-          currentBuffer = history[histIx] || "";
-          syncEntry();
-        } else {
-          histIx = history.length;
-          currentBuffer = "";
-          syncEntry();
-        }
-        ev.preventDefault();
-      }
-    });
-
-    cmd.addEventListener("input", () => {
-      currentBuffer = cmd.value;
-      syncEntry();
-    });
 
     out.addEventListener("pointerdown", () => {
       focusTerminal();
