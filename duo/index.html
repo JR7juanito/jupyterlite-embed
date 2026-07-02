@@ -14,6 +14,12 @@
       --accent: #1d5fe0;
       --accent-2: #0da574;
       --danger: #d63b56;
+      --parchment-base: #f4ead1;
+      --parchment-wash: rgba(255, 255, 255, 0.58);
+      --parchment-shadow: rgba(132, 101, 42, 0.16);
+      --parchment-ink: #2d2418;
+      --parchment-muted: #6d5a43;
+      --parchment-border: #d7c195;
     }
 
     * { box-sizing: border-box; }
@@ -116,6 +122,44 @@
       width: 100%;
       height: 100%;
       min-height: 0;
+      position: relative;
+      background:
+        radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.55) 0, rgba(255, 255, 255, 0.18) 18%, transparent 36%),
+        radial-gradient(circle at 82% 8%, rgba(162, 122, 59, 0.16) 0, transparent 30%),
+        radial-gradient(circle at 86% 86%, rgba(163, 122, 56, 0.14) 0, transparent 28%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.32) 0%, transparent 28%),
+        linear-gradient(0deg, rgba(124, 89, 39, 0.08), rgba(124, 89, 39, 0.08)),
+        repeating-linear-gradient(90deg, rgba(123, 93, 43, 0.06) 0 1px, transparent 1px 28px),
+        repeating-linear-gradient(0deg, rgba(123, 93, 43, 0.04) 0 1px, transparent 1px 24px),
+        linear-gradient(180deg, #f8efda 0%, var(--parchment-base) 100%);
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    #editor .monaco-editor,
+    #editor .monaco-editor-background,
+    #editor .overflow-guard,
+    #editor .monaco-scrollable-element,
+    #editor .margin,
+    #editor .inputarea,
+    #editor .monaco-editor .view-overlays,
+    #editor .monaco-editor .view-lines {
+      background: transparent !important;
+    }
+
+    #editor .monaco-editor .lines-content,
+    #editor .monaco-editor .view-lines,
+    #editor .monaco-editor .view-line,
+    #editor .monaco-editor .view-line span {
+      font-family: Consolas, "Courier New", monospace !important;
+    }
+
+    #editor .monaco-editor .line-numbers {
+      color: rgba(71, 57, 36, 0.62) !important;
+    }
+
+    #editor .monaco-editor .current-line,
+    #editor .monaco-editor .view-overlays .current-line {
+      border-color: rgba(118, 89, 43, 0.12) !important;
     }
 
     iframe {
@@ -200,10 +244,36 @@ Escriba, pruebe e itere sin guardar archivos.
         });
 
         window.require(["vs/editor/editor.main"], () => {
+          window.monaco.editor.defineTheme("duo-parchment", {
+            base: "vs",
+            inherit: true,
+            rules: [
+              { token: "comment", foreground: "7d6a4f", fontStyle: "italic" },
+              { token: "keyword", foreground: "7a1f1f", fontStyle: "bold" },
+              { token: "number", foreground: "964b00" },
+              { token: "string", foreground: "0e5f3a" },
+              { token: "delimiter", foreground: "5f4a2d" },
+              { token: "type.identifier", foreground: "224f8c" },
+              { token: "identifier", foreground: "2d2418" }
+            ],
+            colors: {
+              "editor.background": "#f4ead1",
+              "editor.foreground": "#2d2418",
+              "editorLineNumber.foreground": "#8d7a5b",
+              "editorLineNumber.activeForeground": "#5d4b33",
+              "editorCursor.foreground": "#2d2418",
+              "editor.selectionBackground": "#d8c89c",
+              "editor.inactiveSelectionBackground": "#e6dcc2",
+              "editor.lineHighlightBackground": "#f9f0da",
+              "editorIndentGuide.background1": "#d6c7a7",
+              "editorIndentGuide.activeBackground1": "#bda97f"
+            }
+          });
+
           monacoEditor = window.monaco.editor.create(editorRoot, {
             value: starterCode,
             language: "python",
-            theme: "vs-dark",
+            theme: "duo-parchment",
             automaticLayout: true,
             minimap: { enabled: false },
             fontFamily: "Consolas, 'Courier New', monospace",
