@@ -103,9 +103,9 @@
 </head>
 <body>
   <header>
-    <div><strong>Python Shell</strong> <span class="status" id="status">Inicializando...</span></div>
+    <div><strong>Python Shell - Fiddleford H. McGucket</strong> <span class="status" id="status">Inicializando...</span></div>
     <div class="btns">
-      <button id="clear">Limpiar</button>
+      <button id="clear">Limpiar terminal</button>
       <button id="reset">Reset runtime</button>
     </div>
   </header>
@@ -191,7 +191,7 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 `);
 
         await pyodide.runPythonAsync("import math, random, statistics");
-      status.textContent = "Listo";
+      status.textContent = "";
       status.className = "status";
       clearTerminal();
       renderInitialBanner();

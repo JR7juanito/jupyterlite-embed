@@ -261,10 +261,9 @@
         <span>Editor (multiplataforma)</span>
         <div class="btns">
           <button class="run" id="runBtn">Ejecutar</button>
+          <button id="importBtn">Importar</button>
           <button id="pasteBtn">Pegar</button>
-          <button id="copyBtn">Copiar</button>
-          <button id="clearBtn">Limpiar</button>
-          <button id="resetBtn">Reset</button>
+          <button id="clearBtn">Limpiar hoja</button>
         </div>
       </div>
       <div id="editor" aria-label="Editor de Python">
@@ -286,16 +285,21 @@
     const editorRoot = document.getElementById("editorSurface");
     const status = document.getElementById("status");
     const runBtn = document.getElementById("runBtn");
+    const importBtn = document.getElementById("importBtn");
     const pasteBtn = document.getElementById("pasteBtn");
-    const copyBtn = document.getElementById("copyBtn");
     const clearBtn = document.getElementById("clearBtn");
-    const resetBtn = document.getElementById("resetBtn");
     const consoleFrame = document.getElementById("consoleFrame");
+    const importInput = document.createElement("input");
 
     const bridgeOrigin = window.location.origin;
     let consoleReady = false;
     let monacoEditor = null;
     const pendingMessages = [];
+
+    importInput.type = "file";
+    importInput.accept = ".py,.txt,.md,text/plain";
+    importInput.style.display = "none";
+    document.body.appendChild(importInput);
 
     const starterCode = `"""
 Entorno interactivo para redactar y ejecutar Python en el navegador.
@@ -433,6 +437,18 @@ Escriba, pruebe e itere sin guardar archivos.
     });
 
     runBtn.addEventListener("click", runCode);
+    importBtn.addEventListener("click", () => importInput.click());
+    importInput.addEventListener("change", async () => {
+      if (!monacoEditor || !importInput.files || !importInput.files.length) return;
+
+      const file = importInput.files[0];
+      const text = await file.text();
+      monacoEditor.setValue(text);
+      monacoEditor.focus();
+      status.textContent = `Importado: ${file.name}`;
+      importInput.value = "";
+    });
+
     pasteBtn.addEventListener("click", async () => {
       if (!monacoEditor) return;
 
@@ -451,20 +467,10 @@ Escriba, pruebe e itere sin guardar archivos.
       }
     });
     clearBtn.addEventListener("click", () => {
-      sendToConsole({ type: "duo-clear" });
-      status.textContent = "Consola limpiada";
-    });
-
-    resetBtn.addEventListener("click", () => {
-      sendToConsole({ type: "duo-reset" });
-      status.textContent = "Reiniciando runtime...";
-    });
-
-    copyBtn.addEventListener("click", async () => {
       if (!monacoEditor) return;
-      await navigator.clipboard.writeText(monacoEditor.getValue());
-      status.textContent = "Codigo copiado";
-      setTimeout(() => { status.textContent = consoleReady ? "Consola conectada" : "Esperando consola..."; }, 1200);
+      monacoEditor.setValue("");
+      monacoEditor.focus();
+      status.textContent = "Hoja limpia";
     });
 
     window.addEventListener("keydown", async (e) => {
