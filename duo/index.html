@@ -258,6 +258,13 @@
   <main class="layout">
     <section class="panel">
       <div class="panel-head">
+        <span>Consola Pyodide conectada (real)</span>
+      </div>
+      <iframe id="consoleFrame" title="Consola Pyodide conectada" src="../repl/index.html?embedded=1"></iframe>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
         <span>Editor (multiplataforma)</span>
         <div class="btns">
           <button class="run" id="runBtn">Ejecutar</button>
@@ -270,13 +277,6 @@
         <div class="parchment-layer" aria-hidden="true"></div>
         <div id="editorSurface"></div>
       </div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <span>Consola Pyodide conectada (real)</span>
-      </div>
-      <iframe id="consoleFrame" title="Consola Pyodide conectada" src="../repl/index.html?embedded=1"></iframe>
     </section>
   </main>
 

@@ -20,12 +20,13 @@
 
     body {
       margin: 0;
-      min-height: 100vh;
+      height: 100dvh;
       background: var(--bg);
       color: var(--text);
       font-family: Consolas, "Courier New", monospace;
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      overflow: hidden;
     }
 
     header {
@@ -58,12 +59,44 @@
     #out {
       margin: 0;
       padding: 14px 16px;
+      min-height: 0;
       overflow: auto;
-      white-space: pre;
+      white-space: normal;
       word-break: normal;
       overflow-wrap: normal;
       line-height: 1.45;
       background: radial-gradient(circle at top, #0f1b2b 0%, var(--bg) 60%);
+    }
+
+    .line {
+      display: grid;
+      grid-template-columns: 4ch minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      width: max-content;
+      min-width: 100%;
+      white-space: pre;
+    }
+
+    .banner {
+      display: block;
+      white-space: pre-wrap;
+      word-break: normal;
+      overflow-wrap: anywhere;
+      margin-bottom: 0.1rem;
+    }
+
+    .prefix {
+      color: var(--accent);
+      font-weight: 700;
+      user-select: none;
+      white-space: pre;
+    }
+
+    .payload {
+      color: var(--text);
+      white-space: pre;
+      overflow-wrap: normal;
     }
 
     .in {
@@ -74,12 +107,6 @@
       grid-template-columns: auto 1fr;
       gap: 10px;
       align-items: center;
-    }
-
-    .prompt {
-      color: var(--accent);
-      font-weight: 700;
-      user-select: none;
     }
 
     input {
@@ -138,22 +165,37 @@
       document.title = "Consola Pyodide Conectada";
     }
 
-    function appendLine(msg) {
+    function appendBannerLine(msg) {
       const span = document.createElement("span");
-      span.textContent = msg + "\n";
+      span.className = "banner";
+      span.textContent = msg;
       out.appendChild(span);
-      out.scrollTop = out.scrollHeight;
     }
 
-    function appendOutput(msg) {
-      const span = document.createElement("span");
-      span.textContent = `... ${msg}\n`;
-      out.appendChild(span);
+    function appendPromptLine(prefix, msg, cls = "payload") {
+      const row = document.createElement("div");
+      row.className = "line";
+
+      const prefixSpan = document.createElement("span");
+      prefixSpan.className = "prefix";
+      prefixSpan.textContent = prefix;
+
+      const textSpan = document.createElement("span");
+      textSpan.className = cls;
+      textSpan.textContent = msg;
+
+      row.appendChild(prefixSpan);
+      row.appendChild(textSpan);
+      out.appendChild(row);
       out.scrollTop = out.scrollHeight;
     }
 
     function appendInputLine(msg) {
-      appendLine(`>>> ${msg}`);
+      appendPromptLine(">>>", msg);
+    }
+
+    function appendOutput(msg) {
+      appendPromptLine("...", msg);
     }
 
     function clearTerminal() {
@@ -164,9 +206,9 @@
     }
 
     function renderInitialBanner() {
-      appendLine(`Python ${pythonVersion} (smartPato/TrustNoOne!:journal3, Jun 15 1982, 04:20:51)`);
-      appendLine("[MSC v.618 64-bit (JUNK64)] on file://Oregon/GravityFalls/MysteryShack/McGucketLaptop");
-      appendLine("[system] Runtime listo. Modulos base: math, random, statistics");
+      appendBannerLine(`Python ${pythonVersion} (smartPato/TrustNoOne!:journal3, Jun 15 1982, 04:20:51)`);
+      appendBannerLine("[MSC v.618 64-bit (JUNK64)] on file://Oregon/GravityFalls/MysteryShack/McGucketLaptop");
+      appendBannerLine("[system] Runtime listo. Modulos base: math, random, statistics");
     }
 
     function notifyParent(message) {
