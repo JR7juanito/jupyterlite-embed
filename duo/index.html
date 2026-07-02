@@ -126,35 +126,84 @@
       display: flex;
       padding: 4em;
       box-shadow: 2px 3px 20px black, 0 0 60px #8a4d0f inset;
-      background: #fffef0;
-      filter: url(#wavy2);
+      background: transparent;
       overflow: hidden;
     }
 
-    #editor .monaco-editor,
-    #editor .monaco-editor-background,
-    #editor .overflow-guard,
-    #editor .monaco-scrollable-element,
-    #editor .margin,
-    #editor .inputarea,
-    #editor .monaco-editor .view-overlays,
-    #editor .monaco-editor .view-lines {
+    #editor .parchment-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: #fffef0;
+      box-shadow: inset 0 0 60px #8a4d0f;
+      filter: url(#wavy2);
+    }
+
+    #editor .parchment-layer::before,
+    #editor .parchment-layer::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    #editor .parchment-layer::before {
+      background:
+        radial-gradient(circle at 18% 10%, rgba(255, 255, 255, 0.55) 0 9%, transparent 18%),
+        radial-gradient(circle at 24% 18%, rgba(197, 149, 72, 0.18) 0 7%, transparent 15%),
+        radial-gradient(circle at 58% 14%, rgba(255, 250, 225, 0.42) 0 10%, transparent 20%),
+        radial-gradient(circle at 83% 18%, rgba(164, 117, 53, 0.15) 0 8%, transparent 18%),
+        radial-gradient(circle at 82% 82%, rgba(143, 94, 35, 0.22) 0 14%, transparent 28%),
+        radial-gradient(circle at 10% 90%, rgba(145, 95, 34, 0.20) 0 12%, transparent 26%),
+        linear-gradient(90deg, transparent 0 81.8%, rgba(88, 67, 36, 0.30) 82%, rgba(255, 246, 215, 0.18) 82.2%, transparent 82.6%);
+      mix-blend-mode: multiply;
+      opacity: 0.9;
+    }
+
+    #editor .parchment-layer::after {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.02) 28%, rgba(111, 76, 24, 0.06) 100%),
+        radial-gradient(ellipse at top left, rgba(121, 85, 30, 0.16) 0 18%, transparent 44%),
+        radial-gradient(ellipse at top right, rgba(121, 84, 30, 0.16) 0 16%, transparent 42%),
+        radial-gradient(ellipse at bottom left, rgba(118, 80, 25, 0.22) 0 16%, transparent 46%),
+        radial-gradient(ellipse at bottom right, rgba(118, 80, 25, 0.24) 0 18%, transparent 48%);
+      box-shadow: inset 0 0 30px rgba(122, 84, 26, 0.10);
+    }
+
+    #editorSurface {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      min-width: 0;
+      min-height: 0;
+      background: transparent;
+    }
+
+    #editorSurface .monaco-editor,
+    #editorSurface .monaco-editor-background,
+    #editorSurface .overflow-guard,
+    #editorSurface .monaco-scrollable-element,
+    #editorSurface .margin,
+    #editorSurface .inputarea,
+    #editorSurface .monaco-editor .view-overlays,
+    #editorSurface .monaco-editor .view-lines {
       background: transparent !important;
     }
 
-    #editor .monaco-editor .lines-content,
-    #editor .monaco-editor .view-lines,
-    #editor .monaco-editor .view-line,
-    #editor .monaco-editor .view-line span {
+    #editorSurface .monaco-editor .lines-content,
+    #editorSurface .monaco-editor .view-lines,
+    #editorSurface .monaco-editor .view-line,
+    #editorSurface .monaco-editor .view-line span {
       font-family: Consolas, "Courier New", monospace !important;
     }
 
-    #editor .monaco-editor .line-numbers {
+    #editorSurface .monaco-editor .line-numbers {
       color: rgba(71, 57, 36, 0.62) !important;
     }
 
-    #editor .monaco-editor .current-line,
-    #editor .monaco-editor .view-overlays .current-line {
+    #editorSurface .monaco-editor .current-line,
+    #editorSurface .monaco-editor .view-overlays .current-line {
       border-color: rgba(118, 89, 43, 0.12) !important;
     }
 
@@ -204,7 +253,10 @@
           <button id="resetBtn">Reset</button>
         </div>
       </div>
-      <div id="editor" aria-label="Editor de Python"></div>
+      <div id="editor" aria-label="Editor de Python">
+        <div class="parchment-layer" aria-hidden="true"></div>
+        <div id="editorSurface"></div>
+      </div>
       <div class="note">""" Entorno interactivo para redactar y ejecutar Python en el navegador. Escribe, prueba y ajusta código sin guardar archivos. """</div>
     </section>
 
@@ -219,7 +271,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
   <script type="module">
-    const editorRoot = document.getElementById("editor");
+    const editorRoot = document.getElementById("editorSurface");
     const status = document.getElementById("status");
     const runBtn = document.getElementById("runBtn");
     const pasteBtn = document.getElementById("pasteBtn");
