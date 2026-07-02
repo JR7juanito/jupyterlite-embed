@@ -110,14 +110,54 @@
       min-width: max-content;
     }
 
-    .in {
+    .terminal-input {
       border-top: 1px solid var(--line);
-      padding: 10px;
+      padding: 10px 14px;
       background: var(--panel);
       display: grid;
-      grid-template-columns: auto 1fr;
+      grid-template-columns: auto 1fr auto;
       gap: 10px;
       align-items: center;
+      min-height: 52px;
+    }
+
+    .terminal-input:focus-within {
+      border-top-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .entry-text {
+      color: var(--text);
+      white-space: pre;
+      overflow: hidden;
+      text-overflow: clip;
+      min-width: 0;
+      min-height: 1.45em;
+    }
+
+    .cursor {
+      color: var(--accent);
+      font-weight: 700;
+      user-select: none;
+      animation: blink 1s steps(1, end) infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    .sr-input {
+      position: fixed;
+      left: -10000px;
+      top: 0;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .terminal-input,
+    .terminal-input * {
+      cursor: text;
     }
 
     input {
@@ -151,16 +191,21 @@
 
   <pre id="out"></pre>
 
-  <div class="in">
+  <div class="terminal-input" id="terminalInput" tabindex="0" role="textbox" aria-label="Entrada de Python">
     <span class="prompt">&gt;&gt;&gt;</span>
-    <input id="cmd" autocomplete="off" placeholder="Escribe Python y presiona Enter" />
+    <span class="entry-text" id="entryText"></span>
+    <span class="cursor">|</span>
   </div>
+
+  <input id="cmd" class="sr-input" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text" aria-hidden="true" />
 
   <script type="module">
     import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs";
 
     const isEmbedded = new URLSearchParams(window.location.search).get("embedded") === "1";
     const out = document.getElementById("out");
+    const terminalInput = document.getElementById("terminalInput");
+    const entryText = document.getElementById("entryText");
     const cmd = document.getElementById("cmd");
     const status = document.getElementById("status");
     const clearBtn = document.getElementById("clear");
@@ -171,6 +216,7 @@
     let history = [];
     let histIx = -1;
     let pythonVersion = "3.x.x";
+    let currentBuffer = "";
 
     if (isEmbedded) {
       document.title = "Consola Pyodide Conectada";
@@ -201,6 +247,15 @@
       out.scrollTop = out.scrollHeight;
     }
 
+    function syncEntry() {
+      entryText.textContent = currentBuffer;
+      cmd.value = currentBuffer;
+    }
+
+    function focusTerminal() {
+      cmd.focus({ preventScroll: true });
+    }
+
     function appendInputLine(msg) {
       appendPromptLine(">>>", msg);
     }
@@ -211,7 +266,8 @@
 
     function clearTerminal() {
       out.textContent = "";
-      cmd.value = "";
+      currentBuffer = "";
+      syncEntry();
       history = [];
       histIx = -1;
     }
@@ -239,6 +295,7 @@
       });
 
         await pyodide.runPythonAsync(`
+    import ast
     import builtins
     import pydoc
 
@@ -246,6 +303,27 @@
 
     def _duo_exec(code):
       exec(code, _DUO_GLOBALS, _DUO_GLOBALS)
+
+    def _duo_run(code):
+      tree = ast.parse(code, mode="exec")
+      if not tree.body:
+        return
+
+      last_node = tree.body[-1]
+      if isinstance(last_node, ast.Expr):
+        temp_name = "__duo_expr_result__"
+        tree.body[-1] = ast.Assign(
+          targets=[ast.Name(id=temp_name, ctx=ast.Store())],
+          value=last_node.value,
+        )
+        ast.fix_missing_locations(tree)
+        exec(compile(tree, "<duo>", "exec"), _DUO_GLOBALS, _DUO_GLOBALS)
+        if temp_name in _DUO_GLOBALS:
+          result = _DUO_GLOBALS.pop(temp_name)
+          if result is not None:
+            print(repr(result))
+      else:
+        exec(code, _DUO_GLOBALS, _DUO_GLOBALS)
 
     def _duo_reset():
       _DUO_GLOBALS.clear()
@@ -284,9 +362,11 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     async function runBlock(code) {
       if (!code || !String(code).trim()) return;
 
+      appendInputLine(code);
+
       try {
         pyodide.globals.set("__duo_code", String(code));
-        const result = await pyodide.runPythonAsync("_duo_exec(__duo_code)");
+        const result = await pyodide.runPythonAsync("_duo_run(__duo_code)");
         pyodide.globals.delete("__duo_code");
         if (result !== undefined && result !== null) {
           appendOutput(String(result));
@@ -301,11 +381,10 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     async function runLine(line) {
       if (!line.trim()) return;
       await ensureRuntime();
-      appendInputLine(line);
 
       try {
         pyodide.globals.set("__duo_code", line);
-        const result = await pyodide.runPythonAsync("_duo_exec(__duo_code)");
+        const result = await pyodide.runPythonAsync("_duo_run(__duo_code)");
         pyodide.globals.delete("__duo_code");
         if (result !== undefined && result !== null) {
           appendOutput(String(result));
@@ -326,33 +405,58 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 
     cmd.addEventListener("keydown", async (ev) => {
       if (ev.key === "Enter") {
-        const line = cmd.value;
+        const line = currentBuffer;
+        if (!line.trim()) {
+          ev.preventDefault();
+          currentBuffer = "";
+          syncEntry();
+          return;
+        }
         history.push(line);
         histIx = history.length;
-        cmd.value = "";
+        currentBuffer = "";
+        syncEntry();
+        appendInputLine(line);
         await runLine(line);
+        ev.preventDefault();
       } else if (ev.key === "ArrowUp") {
         if (histIx > 0) {
           histIx -= 1;
-          cmd.value = history[histIx] || "";
+          currentBuffer = history[histIx] || "";
+          syncEntry();
         }
         ev.preventDefault();
       } else if (ev.key === "ArrowDown") {
         if (histIx < history.length - 1) {
           histIx += 1;
-          cmd.value = history[histIx] || "";
+          currentBuffer = history[histIx] || "";
+          syncEntry();
         } else {
           histIx = history.length;
-          cmd.value = "";
+          currentBuffer = "";
+          syncEntry();
         }
         ev.preventDefault();
       }
     });
 
+    cmd.addEventListener("input", () => {
+      currentBuffer = cmd.value;
+      syncEntry();
+    });
+
+    terminalInput.addEventListener("pointerdown", () => {
+      focusTerminal();
+    });
+
+    out.addEventListener("pointerdown", () => {
+      focusTerminal();
+    });
+
     clearBtn.addEventListener("click", () => {
       clearTerminal();
       renderInitialBanner();
-      cmd.focus();
+      focusTerminal();
     });
 
     resetBtn.addEventListener("click", async () => {
@@ -369,12 +473,13 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
       } else if (data.type === "duo-clear") {
         clearTerminal();
         renderInitialBanner();
-        cmd.focus();
+        focusTerminal();
       } else if (data.type === "duo-reset") {
         await resetSession();
       }
     });
 
+    syncEntry();
     bootPromise = boot();
   </script>
 </body>
