@@ -138,6 +138,44 @@
       box-shadow: inset 0 0 0 1px rgba(255, 244, 205, 0.18), inset 0 -30px 42px rgba(128, 84, 18, 0.08);
     }
 
+    #editor::before,
+    #editor::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #editor::before {
+      background:
+        radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.28) 0 12%, transparent 22%),
+        radial-gradient(circle at 30% 18%, rgba(167, 121, 47, 0.16) 0 7%, transparent 16%),
+        radial-gradient(circle at 52% 14%, rgba(255, 248, 215, 0.26) 0 8%, transparent 18%),
+        radial-gradient(circle at 73% 16%, rgba(154, 105, 38, 0.14) 0 9%, transparent 20%),
+        radial-gradient(circle at 90% 24%, rgba(170, 121, 54, 0.18) 0 6%, transparent 17%),
+        radial-gradient(circle at 15% 52%, rgba(161, 113, 42, 0.08) 0 9%, transparent 20%),
+        radial-gradient(circle at 43% 56%, rgba(255, 255, 255, 0.16) 0 10%, transparent 22%),
+        radial-gradient(circle at 66% 58%, rgba(150, 102, 35, 0.10) 0 8%, transparent 18%),
+        radial-gradient(circle at 85% 70%, rgba(156, 110, 39, 0.10) 0 10%, transparent 24%),
+        radial-gradient(circle at 8% 88%, rgba(131, 86, 28, 0.16) 0 8%, transparent 18%),
+        radial-gradient(circle at 58% 86%, rgba(151, 103, 34, 0.09) 0 9%, transparent 20%),
+        linear-gradient(90deg, transparent 0 81.7%, rgba(78, 60, 34, 0.26) 81.95%, rgba(255, 245, 206, 0.08) 82.2%, transparent 82.8%);
+      opacity: 0.95;
+      mix-blend-mode: multiply;
+    }
+
+    #editor::after {
+      background:
+        radial-gradient(ellipse at top left, rgba(115, 81, 26, 0.16) 0 18%, transparent 44%),
+        radial-gradient(ellipse at top right, rgba(123, 84, 30, 0.18) 0 16%, transparent 42%),
+        radial-gradient(ellipse at bottom left, rgba(117, 78, 24, 0.20) 0 16%, transparent 46%),
+        radial-gradient(ellipse at bottom right, rgba(122, 81, 26, 0.22) 0 18%, transparent 48%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 28%, rgba(108, 73, 22, 0.06) 100%);
+      opacity: 0.88;
+      box-shadow: inset 0 0 30px rgba(122, 84, 26, 0.12);
+    }
+
     #editor .monaco-editor,
     #editor .monaco-editor-background,
     #editor .overflow-guard,
@@ -154,6 +192,8 @@
     #editor .monaco-editor .view-line,
     #editor .monaco-editor .view-line span {
       font-family: Consolas, "Courier New", monospace !important;
+      position: relative;
+      z-index: 1;
     }
 
     #editor .monaco-editor .line-numbers {
