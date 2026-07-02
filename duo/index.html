@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Duo Python: Editor + Consola Real</title>
+  <title>Duo Python: Editor + Consola</title>
   <style>
     :root {
       --bg: #0b1d3a;
@@ -262,7 +262,7 @@
   </svg>
 
   <header>
-    <h1>Duo Python Real: Editor + Consola</h1>
+    <h1>Duo Python: Editor + Consola</h1>
     <div class="status" id="status">Inicializando Python local...</div>
   </header>
 
@@ -279,7 +279,6 @@
         <span>Editor (multiplataforma)</span>
         <div class="btns">
           <button class="run" id="runBtn">Ejecutar</button>
-          <button class="test" id="testBtn">Pruebas AED</button>
           <button id="importBtn">Importar</button>
           <button id="pasteBtn">Pegar</button>
           <button id="clearBtn">Limpiar hoja</button>
@@ -297,7 +296,6 @@
     const editorRoot = document.getElementById("editorSurface");
     const status = document.getElementById("status");
     const runBtn = document.getElementById("runBtn");
-    const testBtn = document.getElementById("testBtn");
     const importBtn = document.getElementById("importBtn");
     const pasteBtn = document.getElementById("pasteBtn");
     const clearBtn = document.getElementById("clearBtn");
@@ -434,21 +432,6 @@ Escriba, pruebe e itere sin guardar archivos.
       }
     }
 
-    async function runTests() {
-      if (!monacoEditor) return;
-      const code = monacoEditor.getValue();
-      if (!code.trim()) return;
-
-      if (!consoleReady) {
-        status.textContent = "Esperando consola...";
-      }
-
-      const ok = sendToConsole({ type: "duo-test", code });
-      if (ok) {
-        status.textContent = "Pruebas AED enviadas";
-      }
-    }
-
     window.addEventListener("message", (event) => {
       const data = event.data || {};
 
@@ -458,15 +441,12 @@ Escriba, pruebe e itere sin guardar archivos.
         status.textContent = "Consola conectada";
       } else if (data.type === "duo-exec-done") {
         status.textContent = data.ok ? "Ejecucion completada" : "Error en consola";
-      } else if (data.type === "duo-test-done") {
-        status.textContent = data.ok ? "Pruebas AED completadas" : "Pruebas AED con fallos";
       } else if (data.type === "duo-reset-done") {
         status.textContent = "Runtime reiniciado";
       }
     });
 
     runBtn.addEventListener("click", runCode);
-    testBtn.addEventListener("click", runTests);
     importBtn.addEventListener("click", () => importInput.click());
     importInput.addEventListener("change", async () => {
       if (!monacoEditor || !importInput.files || !importInput.files.length) return;

@@ -4,7 +4,7 @@ Este documento resume la funcionalidad añadida en el Duo Python Lab para testea
 
 ## Implementado
 
-- Botón **Pruebas AED** en la interfaz del editor.
+- Harness interno de pruebas para verificar funciones representativas de los apuntes desde el editor/consola.
 - Runner de pruebas que ejecuta el código actual en un namespace temporal.
 - Captura de salida estándar y de errores del código cargado para no contaminar el reporte.
 - Reporte de resultados con estados `OK`, `FAIL` y `SKIP`.

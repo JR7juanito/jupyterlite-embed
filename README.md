@@ -13,7 +13,6 @@ Notebooks interactivos del curso de **Algoritmos y Estructuras de Datos** basado
 ### 🧪 Duo Python Lab (Editor + Consola)
 
 - **[⚡ Abrir Duo Editor-Consola](https://jr7juanito.github.io/jupyterlite-embed/duo/)** - Editor Python con Pyodide + consola REPL de JupyterLite en paralelo
-- **Pruebas AED** - botón integrado para ejecutar una batería de verificación sobre ejercicios representativos de los apuntes
 - **Paquetes PyPI** - soporte para `import micropip` y `await micropip.install(...)` en el editor y en la consola, además de carga automática de paquetes cuando un `import` falla (`numpy`, `sympy`, `biopython`, etc.)
 - **[🧩 Ver ejemplo embebido](https://jr7juanito.github.io/jupyterlite-embed/duo-embed-example.html)** - Demo lista para copiar iframe
 
@@ -75,6 +74,19 @@ Copia el código iframe de la columna correspondiente en la tabla de arriba, o u
 - **Vista Notebook clásica**: `/notebooks/index.html?path=NOTEBOOK.ipynb`
 - **Consola Python**: `/repl/index.html`
 - **Duo Editor + Consola**: `/duo/`
+
+---
+
+## 🔒 Resguardo y continuidad
+
+Para reducir cambios inesperados y mantener el sitio utilizable por más tiempo:
+
+- Usa la URL publicada de GitHub Pages como punto fijo y evita depender de rutas locales o ramas temporales.
+- Mantén el workflow de despliegue con versiones fijadas, como ya está hecho con `jupyterlite-core` y `jupyterlite-pyodide-kernel`.
+- Protege la rama `main` en GitHub para exigir revisión antes de cambios sensibles.
+- Guarda una copia espejo del sitio generado en otro repositorio o cuenta si necesitas continuidad a largo plazo.
+- Si quieres máxima estabilidad, publica una segunda copia en un hosting independiente como Netlify o Cloudflare Pages usando el mismo build estático.
+- Evita guardar secretos en el repositorio; este proyecto no necesita credenciales para funcionar en el navegador.
 
 ---
 
