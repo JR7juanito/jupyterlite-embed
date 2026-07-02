@@ -138,12 +138,22 @@
       document.title = "Consola Pyodide Conectada";
     }
 
-    function log(msg, cls = "") {
+    function appendLine(msg) {
       const span = document.createElement("span");
-      if (cls) span.className = cls;
+      span.textContent = msg + "\n";
+      out.appendChild(span);
+      out.scrollTop = out.scrollHeight;
+    }
+
+    function appendOutput(msg) {
+      const span = document.createElement("span");
       span.textContent = `... ${msg}\n`;
       out.appendChild(span);
       out.scrollTop = out.scrollHeight;
+    }
+
+    function appendInputLine(msg) {
+      appendLine(`>>> ${msg}`);
     }
 
     function clearTerminal() {
@@ -154,9 +164,9 @@
     }
 
     function renderInitialBanner() {
-      log(`Python ${pythonVersion} (smartPato/TrustNoOne!:journal3, Jun 15 1982, 04:20:51)`);
-      log("[MSC v.618 64-bit (JUNK64)] on file://Oregon/GravityFalls/MysteryShack/McGucketLaptop");
-      log("[system] Runtime listo. Modulos base: math, random, statistics");
+      appendLine(`Python ${pythonVersion} (smartPato/TrustNoOne!:journal3, Jun 15 1982, 04:20:51)`);
+      appendLine("[MSC v.618 64-bit (JUNK64)] on file://Oregon/GravityFalls/MysteryShack/McGucketLaptop");
+      appendLine("[system] Runtime listo. Modulos base: math, random, statistics");
     }
 
     function notifyParent(message) {
@@ -171,11 +181,14 @@
 
       pyodide = await loadPyodide({
         indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/",
-        stdout: (m) => log(m),
-        stderr: (m) => log(m, "err")
+        stdout: (m) => appendOutput(m),
+        stderr: (m) => appendOutput(m)
       });
 
         await pyodide.runPythonAsync(`
+    import builtins
+    import pydoc
+
     _DUO_GLOBALS = {"__name__": "__main__"}
 
     def _duo_exec(code):
@@ -184,6 +197,14 @@
     def _duo_reset():
       _DUO_GLOBALS.clear()
       _DUO_GLOBALS["__name__"] = "__main__"
+
+    def _duo_help(obj=None):
+      if obj is None:
+        print("help() no interactivo: usa help(obj) para ver la documentación.")
+        return
+      print(pydoc.render_doc(obj))
+
+    builtins.help = _duo_help
     `);
 
         pythonVersion = await pyodide.runPythonAsync(`
@@ -215,11 +236,11 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         const result = await pyodide.runPythonAsync("_duo_exec(__duo_code)");
         pyodide.globals.delete("__duo_code");
         if (result !== undefined && result !== null) {
-          log(String(result));
+          appendOutput(String(result));
         }
         notifyParent({ type: "duo-exec-done", ok: true });
       } catch (e) {
-        log(String(e));
+        appendOutput(String(e));
         notifyParent({ type: "duo-exec-done", ok: false });
       }
     }
@@ -227,17 +248,17 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     async function runLine(line) {
       if (!line.trim()) return;
       await ensureRuntime();
-      log(">>> " + line, "sys");
+      appendInputLine(line);
 
       try {
         pyodide.globals.set("__duo_code", line);
         const result = await pyodide.runPythonAsync("_duo_exec(__duo_code)");
         pyodide.globals.delete("__duo_code");
         if (result !== undefined && result !== null) {
-          log(String(result));
+          appendOutput(String(result));
         }
       } catch (e) {
-        log(String(e));
+        appendOutput(String(e));
       }
     }
 
