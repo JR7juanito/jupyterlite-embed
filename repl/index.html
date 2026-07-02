@@ -59,8 +59,9 @@
       margin: 0;
       padding: 14px 16px;
       overflow: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
+      white-space: pre;
+      word-break: normal;
+      overflow-wrap: normal;
       line-height: 1.45;
       background: radial-gradient(circle at top, #0f1b2b 0%, var(--bg) 60%);
     }
@@ -96,14 +97,14 @@
 
     input:focus { border-color: rgba(255, 255, 255, 0.45); }
 
-    .sys { color: var(--muted); }
-    .err { color: var(--err); }
-    .warn { color: var(--warn); }
+    .sys { color: var(--text); }
+    .err { color: var(--text); }
+    .warn { color: var(--text); }
   </style>
 </head>
 <body>
   <header>
-    <div><strong>Python Shell - Fiddleford H. McGucket</strong> <span class="status" id="status">Inicializando...</span></div>
+    <div><strong>Fiddleford H. McGucket</strong> <span class="status" id="status">Inicializando...</span></div>
     <div class="btns">
       <button id="clear">Limpiar terminal</button>
       <button id="reset">Reset runtime</button>
@@ -140,7 +141,7 @@
     function log(msg, cls = "") {
       const span = document.createElement("span");
       if (cls) span.className = cls;
-      span.textContent = msg + "\n";
+      span.textContent = `... ${msg}\n`;
       out.appendChild(span);
       out.scrollTop = out.scrollHeight;
     }
@@ -153,9 +154,9 @@
     }
 
     function renderInitialBanner() {
-      log(`Python ${pythonVersion} (smartPato/TrustNoOne!:journal3, Jun 15 1982, 04:20:51)`, "sys");
-      log("[MSC v.618 64-bit (JUNK64)] on file://Oregon/GravityFalls/MysteryShack/McGucketLaptop", "sys");
-      log("[system] Runtime listo. Modulos base: math, random, statistics", "sys");
+      log(`Python ${pythonVersion} (smartPato/TrustNoOne!:journal3, Jun 15 1982, 04:20:51)`);
+      log("[MSC v.618 64-bit (JUNK64)] on file://Oregon/GravityFalls/MysteryShack/McGucketLaptop");
+      log("[system] Runtime listo. Modulos base: math, random, statistics");
     }
 
     function notifyParent(message) {
@@ -208,7 +209,6 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 
     async function runBlock(code) {
       if (!code || !String(code).trim()) return;
-      log(">>> [bloque editor]", "sys");
 
       try {
         pyodide.globals.set("__duo_code", String(code));
@@ -219,7 +219,7 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         }
         notifyParent({ type: "duo-exec-done", ok: true });
       } catch (e) {
-        log(String(e), "err");
+        log(String(e));
         notifyParent({ type: "duo-exec-done", ok: false });
       }
     }
@@ -237,7 +237,7 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
           log(String(result));
         }
       } catch (e) {
-        log(String(e), "err");
+        log(String(e));
       }
     }
 
@@ -282,8 +282,6 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     });
 
     resetBtn.addEventListener("click", async () => {
-      clearTerminal();
-      log("[system] Reiniciando runtime...", "warn");
       await resetSession();
     });
 
@@ -299,8 +297,6 @@ f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         renderInitialBanner();
         cmd.focus();
       } else if (data.type === "duo-reset") {
-        clearTerminal();
-        log("[system] Reiniciando runtime...", "warn");
         await resetSession();
       }
     });
