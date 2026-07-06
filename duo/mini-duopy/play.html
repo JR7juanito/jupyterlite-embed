@@ -31,8 +31,12 @@
       grid-template-rows: auto 1fr;
     }
 
+    html { height: 100%; }
+    body { height: 100%; }
+
     body.embedded {
       background: #08111d;
+      grid-template-rows: auto 1fr;
     }
 
     header {
@@ -46,7 +50,11 @@
       flex-wrap: wrap;
     }
 
-    body.embedded header { display: none; }
+    body.embedded header {
+      display: flex;
+      padding: 8px 10px;
+      gap: 8px;
+    }
 
     .brand { display: grid; gap: 4px; }
     h1 { margin: 0; font-size: 1rem; line-height: 1.2; }
@@ -57,6 +65,15 @@
       gap: 8px;
       flex-wrap: wrap;
       align-items: center;
+    }
+
+    body.embedded .toolbar {
+      gap: 6px;
+    }
+
+    body.embedded #copyLinkBtn,
+    body.embedded #copyIframeBtn {
+      display: none;
     }
 
     button {
@@ -77,6 +94,12 @@
       gap: 10px;
       padding: 10px;
       min-height: 0;
+      height: 100%;
+    }
+
+    body.embedded .layout {
+      padding: 8px;
+      gap: 8px;
     }
 
     .panel {
@@ -85,9 +108,18 @@
       overflow: hidden;
       background: rgba(14, 22, 36, 0.94);
       min-height: 0;
+      height: 100%;
       display: grid;
       grid-template-rows: auto 1fr;
       box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    body.embedded .panel-head {
+      padding: 8px 10px;
+    }
+
+    body.embedded button {
+      padding: 7px 10px;
     }
 
     .panel-head {
@@ -152,6 +184,7 @@
 
     .editor-wrap {
       min-height: 0;
+      height: 100%;
       background:
         linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0.05) 18%, rgba(104, 71, 23, 0.08) 100%),
         #f3e2a4;
