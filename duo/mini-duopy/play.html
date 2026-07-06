@@ -11,8 +11,6 @@
       --line: rgba(255, 255, 255, 0.14);
       --text: #dbe9ff;
       --muted: #9db2d2;
-      --accent: #8cff7f;
-      --accent-2: #7cc7ff;
       --warn: #ffd96a;
       --err: #ff8b8b;
       --paper: #f3e2a4;
@@ -48,25 +46,11 @@
       flex-wrap: wrap;
     }
 
-    body.embedded header {
-      display: none;
-    }
+    body.embedded header { display: none; }
 
-    .brand {
-      display: grid;
-      gap: 4px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 1rem;
-      line-height: 1.2;
-    }
-
-    .status {
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
+    .brand { display: grid; gap: 4px; }
+    h1 { margin: 0; font-size: 1rem; line-height: 1.2; }
+    .status { color: var(--muted); font-size: 0.9rem; }
 
     .toolbar {
       display: flex;
@@ -117,10 +101,6 @@
       flex-wrap: wrap;
     }
 
-    .panel-body {
-      min-height: 0;
-    }
-
     .editor-shell {
       display: grid;
       grid-template-rows: auto 1fr;
@@ -136,15 +116,8 @@
       background: rgba(255, 255, 255, 0.03);
     }
 
-    .field {
-      display: grid;
-      gap: 6px;
-    }
-
-    .field label {
-      color: var(--muted);
-      font-size: 0.82rem;
-    }
+    .field { display: grid; gap: 6px; }
+    .field label { color: var(--muted); font-size: 0.82rem; }
 
     input, textarea {
       width: 100%;
@@ -213,9 +186,12 @@
 
     body.embedded .sharebox { display: none; }
 
-    .share-grid {
-      display: grid;
-      gap: 8px;
+    .share-grid { display: grid; gap: 8px; }
+
+    .share-label {
+      margin: 0 12px -2px;
+      color: var(--muted);
+      font-size: 0.82rem;
     }
 
     .snippet {
@@ -263,7 +239,7 @@
         <span>Editor principal</span>
         <span id="slugBadge">slug: example</span>
       </div>
-      <div class="panel-body editor-shell">
+      <div class="editor-shell">
         <div class="editor-meta">
           <div class="field">
             <label for="titleInput">Título</label>
@@ -285,11 +261,15 @@
         <span>Consola</span>
         <span id="runtimeState">runtime: inactivo</span>
       </div>
-      <div class="panel-body console" id="console"></div>
+      <div class="console" id="console"></div>
       <div class="sharebox">
         <div class="share-grid">
-          <div class="hint">Este link es el que puedes incrustar o compartir. Si quieres un archivo físico por slug, usa el botón de exportación en el generador y guarda el HTML en una ruta como <code>main/example1/index.html</code>.</div>
+          <div class="hint">El enlace directo abre el mini Duo. El enlace embebible ya viene listo para usar en un <code>iframe</code>.</div>
+          <div class="share-label">Enlace directo</div>
           <div class="snippet" id="shareLink"></div>
+          <div class="share-label">Enlace embebible</div>
+          <div class="snippet" id="embedLink"></div>
+          <div class="share-label">Iframe listo</div>
           <div class="snippet" id="iframeSnippet"></div>
         </div>
       </div>
@@ -297,7 +277,7 @@
   </main>
 
   <script type="module">
-    import { copyText, decodePayload, escapeHtml, makeIframeSnippet, makePlayUrl } from "./common.js";
+    import { copyText, decodePayload, makeEmbeddedPlayUrl, makeIframeSnippet, makePlayUrl } from "./common.js";
 
     const embedded = new URLSearchParams(window.location.search).get("embedded") === "1";
     if (embedded) document.body.classList.add("embedded");
@@ -311,6 +291,7 @@
     const codeInput = document.getElementById("codeInput");
     const consoleBox = document.getElementById("console");
     const shareLink = document.getElementById("shareLink");
+    const embedLink = document.getElementById("embedLink");
     const iframeSnippet = document.getElementById("iframeSnippet");
     const runBtn = document.getElementById("runBtn");
     const resetBtn = document.getElementById("resetBtn");
@@ -325,20 +306,17 @@ def suma(a, b):
 
 suma(2, 3)`;
 
-    const bootstrapState = () => {
+    function stateFromHash() {
       const params = new URLSearchParams(window.location.hash.slice(1));
-      const payload = decodePayload(params.get("state"));
-      if (payload && typeof payload === "object") {
-        return payload;
-      }
-      return {
-        title: titleInput.value,
-        slug: slugInput.value,
-        code: starterCode
-      };
+      return decodePayload(params.get("state"));
+    }
+
+    let state = stateFromHash() || {
+      title: titleInput.value,
+      slug: slugInput.value,
+      code: starterCode
     };
 
-    let state = bootstrapState();
     let pyodide = null;
     let runtimeReady = false;
     let bootPromise = null;
@@ -366,10 +344,11 @@ suma(2, 3)`;
       runtimeState.textContent = runtimeReady ? "runtime: activo" : "runtime: inactivo";
 
       const url = makePlayUrl(state);
-      const iframeUrl = `${url}${url.includes("#") ? "" : ""}`;
+      const embedUrl = makeEmbeddedPlayUrl(state);
       shareLink.textContent = url;
-      iframeSnippet.textContent = makeIframeSnippet(url, 760);
-      return { url, iframeUrl };
+      embedLink.textContent = embedUrl;
+      iframeSnippet.textContent = makeIframeSnippet(embedUrl, 760);
+      return { url, embedUrl };
     }
 
     function loadStateToForm(nextState) {
@@ -386,6 +365,7 @@ suma(2, 3)`;
 
     async function ensureRuntime() {
       if (bootPromise) return bootPromise;
+
       bootPromise = (async () => {
         status.textContent = "Cargando Pyodide...";
         const { loadPyodide } = await import("https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs");
@@ -394,15 +374,16 @@ suma(2, 3)`;
           stdout: (msg) => setConsole("stdout", msg),
           stderr: (msg) => setConsole("stderr", msg)
         });
-        await pyodide.runPythonAsync(`
-              const iframeUrl = new URL(url);
-              iframeUrl.searchParams.set("embedded", "1");
-import inspect
-              iframeSnippet.textContent = makeIframeSnippet(iframeUrl.toString(), 760);
 
-      async def _mini_exec(code):
+        await pyodide.runPythonAsync(`
+import ast
+import inspect
+
+MINI_GLOBALS = {"__name__": "__main__"}
+
+async def _mini_exec(code):
   tree = ast.parse(code, mode="exec")
-              return { url, iframeUrl: iframeUrl.toString() };
+  if not tree.body:
     return None
 
   last_node = tree.body[-1]
@@ -416,7 +397,7 @@ import inspect
     compiled = compile(tree, "<mini-duo>", "exec", flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
     result = eval(compiled, MINI_GLOBALS, MINI_GLOBALS)
     if inspect.isawaitable(result):
-      result = await result
+      await result
     if temp_name in MINI_GLOBALS:
       value = MINI_GLOBALS.pop(temp_name)
       if value is not None:
@@ -425,13 +406,15 @@ import inspect
     compiled = compile(code, "<mini-duo>", "exec", flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
     result = eval(compiled, MINI_GLOBALS, MINI_GLOBALS)
     if inspect.isawaitable(result):
-      result = await result
+      await result
   return None
         `);
+
         runtimeReady = true;
         runtimeState.textContent = "runtime: activo";
         status.textContent = "Pyodide listo";
       })();
+
       return bootPromise;
     }
 
@@ -441,22 +424,28 @@ import inspect
 
       clearConsole();
       setConsole("banner", `>>> ${state.title}`);
+
       try {
         await ensureRuntime();
         pyodide.globals.set("__mini_code", codeInput.value);
         await pyodide.runPythonAsync("await _mini_exec(__mini_code)");
-        pyodide.globals.delete("__mini_code");
         setConsole("system", "[ok] ejecución completada");
       } catch (error) {
         setConsole("stderr", String(error));
         runtimeState.textContent = "runtime: error";
+      } finally {
+        try {
+          pyodide?.globals?.delete("__mini_code");
+        } catch {
+          // ignore cleanup errors
+        }
       }
     }
 
     function updatePreview() {
       const { url } = syncState();
       if (!embedded) {
-        window.history.replaceState(null, "", `#state=${encodeURIComponent(url.split("#state=")[1] || "")}`);
+        window.history.replaceState(null, "", `#state=${url.split("#state=")[1] || ""}`);
       }
     }
 
@@ -483,8 +472,8 @@ import inspect
     });
 
     copyIframeBtn.addEventListener("click", async () => {
-      const { url } = syncState();
-      await copyText(makeIframeSnippet(url, 760));
+      const { embedUrl } = syncState();
+      await copyText(makeIframeSnippet(embedUrl, 760));
       status.textContent = "Iframe copiado";
     });
 
@@ -498,12 +487,7 @@ import inspect
     loadStateToForm(state);
     clearConsole();
     setConsole("banner", `Mini Duo Python listo: ${state.slug}`);
-    if (!embedded) {
-      const { url } = syncState();
-      window.history.replaceState(null, "", `#state=${url.split("#state=")[1] || ""}`);
-    } else {
-      syncState();
-    }
+    syncState();
   </script>
 </body>
 </html>

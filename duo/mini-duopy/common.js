@@ -43,6 +43,13 @@ export function makePlayUrl(payload, baseHref = new URL("./play.html", window.lo
   return url.toString();
 }
 
+export function makeEmbeddedPlayUrl(payload, baseHref = new URL("./play.html", window.location.href)) {
+  const url = new URL(baseHref);
+  url.searchParams.set("embedded", "1");
+  url.hash = `state=${encodePayload(payload)}`;
+  return url.toString();
+}
+
 export function makeIframeSnippet(url, height = 760) {
   return `<iframe src="${url}" width="100%" height="${height}" style="border:0; border-radius:14px; overflow:hidden;" title="Mini Duo Python"></iframe>`;
 }

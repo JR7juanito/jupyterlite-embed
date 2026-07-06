@@ -189,6 +189,12 @@
       line-height: 1.45;
     }
 
+    .share-label {
+      margin: 0 12px -2px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
     .share-note code,
     .snippet,
     .example-item code {
@@ -315,9 +321,13 @@
         <span id="previewState">sin publicar</span>
       </div>
       <div class="share-note">
-        El enlace público queda listo al instante usando el payload en la URL. Si quieres una ruta física tipo <code>main/example1</code>, usa <strong>Descargar HTML</strong> y guarda el archivo como <code>index.html</code> dentro de esa carpeta antes de publicar.
+        El generador te da un enlace directo y otro embebible. Si quieres una ruta física tipo <code>main/example1</code>, usa <strong>Descargar HTML</strong> y guarda el archivo como <code>index.html</code> dentro de esa carpeta antes de publicar.
       </div>
+      <div class="share-label">Enlace directo</div>
       <div class="snippet" id="shareLink"></div>
+      <div class="share-label">Enlace embebible</div>
+      <div class="snippet" id="embedLink"></div>
+      <div class="share-label">Iframe listo</div>
       <div class="snippet" id="iframeSnippet"></div>
       <iframe class="preview-frame" id="previewFrame" title="Mini Duo preview"></iframe>
       <div class="library">
@@ -339,6 +349,7 @@
       escapeHtml,
       getExample,
       listExamples,
+      makeEmbeddedPlayUrl,
       makeIframeSnippet,
       makePlayUrl,
       slugify,
@@ -352,6 +363,7 @@
     const slugInput = document.getElementById("slugInput");
     const codeInput = document.getElementById("codeInput");
     const shareLink = document.getElementById("shareLink");
+    const embedLink = document.getElementById("embedLink");
     const iframeSnippet = document.getElementById("iframeSnippet");
     const previewFrame = document.getElementById("previewFrame");
     const libraryList = document.getElementById("libraryList");
@@ -392,11 +404,11 @@ suma(2, 3)`;
     function refreshPreview() {
       state = buildState();
       const url = makePlayUrl(state);
-      const previewUrl = new URL(url);
-      previewUrl.searchParams.set("embedded", "1");
+      const embedUrl = makeEmbeddedPlayUrl(state);
       shareLink.textContent = url;
-      iframeSnippet.textContent = makeIframeSnippet(previewUrl.toString(), 760);
-      previewFrame.src = previewUrl.toString();
+      embedLink.textContent = embedUrl;
+      iframeSnippet.textContent = makeIframeSnippet(embedUrl, 760);
+      previewFrame.src = embedUrl;
       slugBadge.textContent = `slug: ${state.slug}`;
       previewState.textContent = state.title;
       window.history.replaceState(null, "", `#state=${url.split("#state=")[1] || ""}`);
@@ -475,8 +487,8 @@ suma(2, 3)`;
       status.textContent = "Link copiado";
     });
     copyIframeBtn.addEventListener("click", async () => {
-      const url = refreshPreview();
-      await copyText(makeIframeSnippet(url, 760));
+      const embedUrl = makeEmbeddedPlayUrl(buildState());
+      await copyText(makeIframeSnippet(embedUrl, 760));
       status.textContent = "Iframe copiado";
     });
 
