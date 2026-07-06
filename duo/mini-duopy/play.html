@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Duo Python</title>
+  <style>
+    :root {
+      --bg: #08111d;
+      --panel: #0e1624;
+      --line: rgba(255, 255, 255, 0.14);
+      --text: #dbe9ff;
+      --muted: #9db2d2;
+      --accent: #8cff7f;
+      --accent-2: #7cc7ff;
+      --warn: #ffd96a;
+      --err: #ff8b8b;
+      --paper: #f3e2a4;
+      --paper-ink: #2f2517;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(76, 113, 168, 0.24), transparent 40%),
+        linear-gradient(180deg, #07111e 0%, #091527 100%);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    body.embedded {
+      background: #08111d;
+    }
+
+    header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(9, 17, 30, 0.9);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    body.embedded header {
+      display: none;
+    }
+
+    .brand {
+      display: grid;
+      gap: 4px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.2;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: #13233a;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 11px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: rgba(255, 255, 255, 0.3); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 10px;
+      padding: 10px;
+      min-height: 0;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(14, 22, 36, 0.94);
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .panel-head {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .panel-body {
+      min-height: 0;
+    }
+
+    .editor-shell {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      height: 100%;
+    }
+
+    .editor-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 10px;
+      background: rgba(5, 10, 18, 0.66);
+      color: var(--text);
+      padding: 10px 12px;
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: rgba(140, 255, 127, 0.45);
+      box-shadow: 0 0 0 3px rgba(140, 255, 127, 0.08);
+    }
+
+    textarea {
+      resize: none;
+      min-height: 100%;
+      border-radius: 0;
+      border: 0;
+      background: #f3e2a4;
+      color: var(--paper-ink);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      padding: 16px 18px 18px;
+      white-space: pre;
+      overflow: auto;
+    }
+
+    .editor-wrap {
+      min-height: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0.05) 18%, rgba(104, 71, 23, 0.08) 100%),
+        #f3e2a4;
+    }
+
+    .console {
+      height: 100%;
+      overflow: auto;
+      padding: 14px;
+      background:
+        radial-gradient(circle at top, rgba(94, 134, 189, 0.16), transparent 40%),
+        linear-gradient(180deg, #08111d 0%, #07111a 100%);
+      font-family: Consolas, "Courier New", monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.48;
+    }
+
+    .line { margin: 0 0 0.45rem 0; }
+    .banner { color: var(--muted); }
+    .stdout { color: var(--text); }
+    .stderr { color: var(--err); }
+    .system { color: var(--warn); }
+
+    .sharebox {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    body.embedded .sharebox { display: none; }
+
+    .share-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .snippet {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.86rem;
+      color: #e8f0ff;
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      overflow: auto;
+      white-space: pre;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { min-height: 48vh; }
+      .editor-meta { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1 id="pageTitle">Mini Duo Python</h1>
+      <div class="status" id="status">Listo para cargar Pyodide cuando ejecutes el código.</div>
+    </div>
+    <div class="toolbar">
+      <button id="runBtn">Ejecutar</button>
+      <button id="resetBtn">Reset</button>
+      <button id="copyLinkBtn">Copiar link</button>
+      <button id="copyIframeBtn">Copiar iframe</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <div class="panel-head">
+        <span>Editor principal</span>
+        <span id="slugBadge">slug: example</span>
+      </div>
+      <div class="panel-body editor-shell">
+        <div class="editor-meta">
+          <div class="field">
+            <label for="titleInput">Título</label>
+            <input id="titleInput" type="text" value="Mini Duo Python" />
+          </div>
+          <div class="field">
+            <label for="slugInput">Slug interno</label>
+            <input id="slugInput" type="text" value="main/example1" />
+          </div>
+        </div>
+        <div class="editor-wrap">
+          <textarea id="codeInput" spellcheck="false"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <span>Consola</span>
+        <span id="runtimeState">runtime: inactivo</span>
+      </div>
+      <div class="panel-body console" id="console"></div>
+      <div class="sharebox">
+        <div class="share-grid">
+          <div class="hint">Este link es el que puedes incrustar o compartir. Si quieres un archivo físico por slug, usa el botón de exportación en el generador y guarda el HTML en una ruta como <code>main/example1/index.html</code>.</div>
+          <div class="snippet" id="shareLink"></div>
+          <div class="snippet" id="iframeSnippet"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { copyText, decodePayload, escapeHtml, makeIframeSnippet, makePlayUrl } from "./common.js";
+
+    const embedded = new URLSearchParams(window.location.search).get("embedded") === "1";
+    if (embedded) document.body.classList.add("embedded");
+
+    const pageTitle = document.getElementById("pageTitle");
+    const status = document.getElementById("status");
+    const runtimeState = document.getElementById("runtimeState");
+    const slugBadge = document.getElementById("slugBadge");
+    const titleInput = document.getElementById("titleInput");
+    const slugInput = document.getElementById("slugInput");
+    const codeInput = document.getElementById("codeInput");
+    const consoleBox = document.getElementById("console");
+    const shareLink = document.getElementById("shareLink");
+    const iframeSnippet = document.getElementById("iframeSnippet");
+    const runBtn = document.getElementById("runBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const copyIframeBtn = document.getElementById("copyIframeBtn");
+
+    const starterCode = `print("Hola desde Mini Duo Python")
+
+
+def suma(a, b):
+    return a + b
+
+suma(2, 3)`;
+
+    const bootstrapState = () => {
+      const params = new URLSearchParams(window.location.hash.slice(1));
+      const payload = decodePayload(params.get("state"));
+      if (payload && typeof payload === "object") {
+        return payload;
+      }
+      return {
+        title: titleInput.value,
+        slug: slugInput.value,
+        code: starterCode
+      };
+    };
+
+    let state = bootstrapState();
+    let pyodide = null;
+    let runtimeReady = false;
+    let bootPromise = null;
+
+    function setConsole(kind, text) {
+      const line = document.createElement("div");
+      line.className = `line ${kind}`;
+      line.textContent = text;
+      consoleBox.appendChild(line);
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+    }
+
+    function clearConsole() {
+      consoleBox.innerHTML = "";
+    }
+
+    function syncState() {
+      const title = titleInput.value.trim() || "Mini Duo Python";
+      const slug = slugInput.value.trim() || "main/example1";
+      const code = codeInput.value;
+      state = { title, slug, code };
+      document.title = title;
+      pageTitle.textContent = title;
+      slugBadge.textContent = `slug: ${slug}`;
+      runtimeState.textContent = runtimeReady ? "runtime: activo" : "runtime: inactivo";
+
+      const url = makePlayUrl(state);
+      const iframeUrl = `${url}${url.includes("#") ? "" : ""}`;
+      shareLink.textContent = url;
+      iframeSnippet.textContent = makeIframeSnippet(url, 760);
+      return { url, iframeUrl };
+    }
+
+    function loadStateToForm(nextState) {
+      state = {
+        title: nextState.title || "Mini Duo Python",
+        slug: nextState.slug || "main/example1",
+        code: nextState.code || starterCode
+      };
+      titleInput.value = state.title;
+      slugInput.value = state.slug;
+      codeInput.value = state.code;
+      syncState();
+    }
+
+    async function ensureRuntime() {
+      if (bootPromise) return bootPromise;
+      bootPromise = (async () => {
+        status.textContent = "Cargando Pyodide...";
+        const { loadPyodide } = await import("https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs");
+        pyodide = await loadPyodide({
+          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/",
+          stdout: (msg) => setConsole("stdout", msg),
+          stderr: (msg) => setConsole("stderr", msg)
+        });
+        await pyodide.runPythonAsync(`
+              const iframeUrl = new URL(url);
+              iframeUrl.searchParams.set("embedded", "1");
+import inspect
+              iframeSnippet.textContent = makeIframeSnippet(iframeUrl.toString(), 760);
+
+      async def _mini_exec(code):
+  tree = ast.parse(code, mode="exec")
+              return { url, iframeUrl: iframeUrl.toString() };
+    return None
+
+  last_node = tree.body[-1]
+  if isinstance(last_node, ast.Expr):
+    temp_name = "__mini_result__"
+    tree.body[-1] = ast.Assign(
+      targets=[ast.Name(id=temp_name, ctx=ast.Store())],
+      value=last_node.value,
+    )
+    ast.fix_missing_locations(tree)
+    compiled = compile(tree, "<mini-duo>", "exec", flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+    result = eval(compiled, MINI_GLOBALS, MINI_GLOBALS)
+    if inspect.isawaitable(result):
+      result = await result
+    if temp_name in MINI_GLOBALS:
+      value = MINI_GLOBALS.pop(temp_name)
+      if value is not None:
+        print(repr(value))
+  else:
+    compiled = compile(code, "<mini-duo>", "exec", flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+    result = eval(compiled, MINI_GLOBALS, MINI_GLOBALS)
+    if inspect.isawaitable(result):
+      result = await result
+  return None
+        `);
+        runtimeReady = true;
+        runtimeState.textContent = "runtime: activo";
+        status.textContent = "Pyodide listo";
+      })();
+      return bootPromise;
+    }
+
+    async function runCode() {
+      const code = codeInput.value.trim();
+      if (!code) return;
+
+      clearConsole();
+      setConsole("banner", `>>> ${state.title}`);
+      try {
+        await ensureRuntime();
+        pyodide.globals.set("__mini_code", codeInput.value);
+        await pyodide.runPythonAsync("await _mini_exec(__mini_code)");
+        pyodide.globals.delete("__mini_code");
+        setConsole("system", "[ok] ejecución completada");
+      } catch (error) {
+        setConsole("stderr", String(error));
+        runtimeState.textContent = "runtime: error";
+      }
+    }
+
+    function updatePreview() {
+      const { url } = syncState();
+      if (!embedded) {
+        window.history.replaceState(null, "", `#state=${encodeURIComponent(url.split("#state=")[1] || "")}`);
+      }
+    }
+
+    titleInput.addEventListener("input", updatePreview);
+    slugInput.addEventListener("input", updatePreview);
+    codeInput.addEventListener("input", updatePreview);
+
+    runBtn.addEventListener("click", runCode);
+    resetBtn.addEventListener("click", () => {
+      runtimeReady = false;
+      bootPromise = null;
+      pyodide = null;
+      clearConsole();
+      setConsole("banner", "Runtime reiniciado");
+      syncState();
+      status.textContent = "Listo para ejecutar";
+      runtimeState.textContent = "runtime: inactivo";
+    });
+
+    copyLinkBtn.addEventListener("click", async () => {
+      const { url } = syncState();
+      await copyText(url);
+      status.textContent = "Link copiado";
+    });
+
+    copyIframeBtn.addEventListener("click", async () => {
+      const { url } = syncState();
+      await copyText(makeIframeSnippet(url, 760));
+      status.textContent = "Iframe copiado";
+    });
+
+    codeInput.addEventListener("keydown", async (event) => {
+      if (event.ctrlKey && event.key === "Enter") {
+        event.preventDefault();
+        await runCode();
+      }
+    });
+
+    loadStateToForm(state);
+    clearConsole();
+    setConsole("banner", `Mini Duo Python listo: ${state.slug}`);
+    if (!embedded) {
+      const { url } = syncState();
+      window.history.replaceState(null, "", `#state=${url.split("#state=")[1] || ""}`);
+    } else {
+      syncState();
+    }
+  </script>
+</body>
+</html>

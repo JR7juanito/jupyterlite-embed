@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Duo Python Generator</title>
+  <style>
+    :root {
+      --bg: #07111d;
+      --panel: #0e1624;
+      --line: rgba(255, 255, 255, 0.14);
+      --text: #e8f0ff;
+      --muted: #9db2d2;
+      --accent: #8cff7f;
+      --accent-2: #7cc7ff;
+      --paper: #f3e2a4;
+      --paper-ink: #2f2517;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(76, 113, 168, 0.24), transparent 40%),
+        linear-gradient(180deg, #07111e 0%, #091527 100%);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(9, 17, 30, 0.9);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: grid;
+      gap: 4px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.2;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: #13233a;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 11px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: rgba(255, 255, 255, 0.3); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 10px;
+      padding: 10px;
+      min-height: 0;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(14, 22, 36, 0.94);
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .panel-head {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .panel-body {
+      min-height: 0;
+    }
+
+    .builder-shell {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      height: 100%;
+    }
+
+    .editor-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 10px;
+      background: rgba(5, 10, 18, 0.66);
+      color: var(--text);
+      padding: 10px 12px;
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: rgba(140, 255, 127, 0.45);
+      box-shadow: 0 0 0 3px rgba(140, 255, 127, 0.08);
+    }
+
+    textarea {
+      resize: none;
+      min-height: 100%;
+      border-radius: 0;
+      border: 0;
+      background: #f3e2a4;
+      color: var(--paper-ink);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      padding: 16px 18px 18px;
+      white-space: pre;
+      overflow: auto;
+    }
+
+    .editor-wrap {
+      min-height: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0.05) 18%, rgba(104, 71, 23, 0.08) 100%),
+        #f3e2a4;
+    }
+
+    .preview {
+      height: 100%;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+    }
+
+    .share-note {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .share-note code,
+    .snippet,
+    .example-item code {
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .snippet {
+      margin: 0 12px 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.22);
+      overflow: auto;
+      white-space: pre;
+      color: #e8f0ff;
+      font-size: 0.86rem;
+    }
+
+    .preview-frame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #07111d;
+    }
+
+    .library {
+      padding: 12px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 10px;
+    }
+
+    .library-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .library-list {
+      display: grid;
+      gap: 8px;
+      max-height: 220px;
+      overflow: auto;
+    }
+
+    .example-item {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .example-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .example-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { min-height: 48vh; }
+      .editor-meta { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>Mini Duo Python Generator</h1>
+      <div class="status" id="status">Crea un slug, escribe código y genera el link/iframe.</div>
+    </div>
+    <div class="toolbar">
+      <button id="saveBtn">Guardar ejemplo</button>
+      <button id="downloadBtn">Descargar HTML</button>
+      <button id="copyLinkBtn">Copiar link</button>
+      <button id="copyIframeBtn">Copiar iframe</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <div class="panel-head">
+        <span>Editor del ejemplo</span>
+        <span id="slugBadge">slug: main/example1</span>
+      </div>
+      <div class="panel-body builder-shell">
+        <div class="editor-meta">
+          <div class="field">
+            <label for="titleInput">Título</label>
+            <input id="titleInput" type="text" value="Mini Duo Python" />
+          </div>
+          <div class="field">
+            <label for="slugInput">Slug</label>
+            <input id="slugInput" type="text" value="main/example1" placeholder="main/example1" />
+          </div>
+        </div>
+        <div class="editor-wrap">
+          <textarea id="codeInput" spellcheck="false"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel preview">
+      <div class="panel-head">
+        <span>Publicación y vista previa</span>
+        <span id="previewState">sin publicar</span>
+      </div>
+      <div class="share-note">
+        El enlace público queda listo al instante usando el payload en la URL. Si quieres una ruta física tipo <code>main/example1</code>, usa <strong>Descargar HTML</strong> y guarda el archivo como <code>index.html</code> dentro de esa carpeta antes de publicar.
+      </div>
+      <div class="snippet" id="shareLink"></div>
+      <div class="snippet" id="iframeSnippet"></div>
+      <iframe class="preview-frame" id="previewFrame" title="Mini Duo preview"></iframe>
+      <div class="library">
+        <div class="library-head">
+          <span>Ejemplos guardados localmente</span>
+          <span class="hint">Solo en este navegador hasta exportar/publish.</span>
+        </div>
+        <div class="library-list" id="libraryList"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import {
+      buildWrapperHtml,
+      copyText,
+      decodePayload,
+      deleteExample,
+      escapeHtml,
+      getExample,
+      listExamples,
+      makeIframeSnippet,
+      makePlayUrl,
+      slugify,
+      upsertExample
+    } from "./common.js";
+
+    const status = document.getElementById("status");
+    const previewState = document.getElementById("previewState");
+    const slugBadge = document.getElementById("slugBadge");
+    const titleInput = document.getElementById("titleInput");
+    const slugInput = document.getElementById("slugInput");
+    const codeInput = document.getElementById("codeInput");
+    const shareLink = document.getElementById("shareLink");
+    const iframeSnippet = document.getElementById("iframeSnippet");
+    const previewFrame = document.getElementById("previewFrame");
+    const libraryList = document.getElementById("libraryList");
+    const saveBtn = document.getElementById("saveBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const copyIframeBtn = document.getElementById("copyIframeBtn");
+
+    const starterCode = `print("Hola desde Mini Duo Python")
+
+
+def suma(a, b):
+    return a + b
+
+suma(2, 3)`;
+
+    function initialState() {
+      const params = new URLSearchParams(window.location.hash.slice(1));
+      const payload = decodePayload(params.get("state"));
+      if (payload && typeof payload === "object") return payload;
+      return {
+        title: "Mini Duo Python",
+        slug: "main/example1",
+        code: starterCode
+      };
+    }
+
+    let state = initialState();
+
+    function buildState() {
+      return {
+        title: titleInput.value.trim() || "Mini Duo Python",
+        slug: slugInput.value.trim() || slugify(titleInput.value),
+        code: codeInput.value
+      };
+    }
+
+    function refreshPreview() {
+      state = buildState();
+      const url = makePlayUrl(state);
+      const previewUrl = new URL(url);
+      previewUrl.searchParams.set("embedded", "1");
+      shareLink.textContent = url;
+      iframeSnippet.textContent = makeIframeSnippet(previewUrl.toString(), 760);
+      previewFrame.src = previewUrl.toString();
+      slugBadge.textContent = `slug: ${state.slug}`;
+      previewState.textContent = state.title;
+      window.history.replaceState(null, "", `#state=${url.split("#state=")[1] || ""}`);
+      return url;
+    }
+
+    function loadExample(example) {
+      if (!example) return;
+      titleInput.value = example.title || "Mini Duo Python";
+      slugInput.value = example.slug || "main/example1";
+      codeInput.value = example.code || starterCode;
+      refreshPreview();
+      status.textContent = `Ejemplo cargado: ${slugInput.value}`;
+    }
+
+    function renderLibrary() {
+      const items = listExamples();
+      if (!items.length) {
+        libraryList.innerHTML = `<div class="hint">Todavía no hay ejemplos guardados. Usa <strong>Guardar ejemplo</strong> para crear el primero.</div>`;
+        return;
+      }
+
+      libraryList.innerHTML = items.map((item) => `
+        <article class="example-item" data-slug="${escapeHtml(item.slug)}">
+          <div class="example-top">
+            <div>
+              <strong>${escapeHtml(item.title || item.slug)}</strong><br />
+              <span class="hint">${escapeHtml(item.slug)}</span>
+            </div>
+            <div class="example-actions">
+              <button data-action="load">Cargar</button>
+              <button data-action="open">Abrir</button>
+              <button data-action="copy">Copiar link</button>
+              <button data-action="delete">Borrar</button>
+            </div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    async function saveCurrentExample() {
+      state = buildState();
+      upsertExample(state);
+      renderLibrary();
+      status.textContent = `Guardado: ${state.slug}`;
+    }
+
+    async function downloadStandalone() {
+      state = buildState();
+      const html = buildWrapperHtml(state);
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${state.slug.replace(/\//g, "-") || "mini-duo"}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      status.textContent = "HTML descargado";
+    }
+
+    titleInput.addEventListener("input", () => {
+      if (!slugInput.value.trim()) {
+        slugInput.value = slugify(titleInput.value);
+      }
+      refreshPreview();
+    });
+
+    slugInput.addEventListener("input", refreshPreview);
+    codeInput.addEventListener("input", refreshPreview);
+
+    saveBtn.addEventListener("click", saveCurrentExample);
+    downloadBtn.addEventListener("click", downloadStandalone);
+    copyLinkBtn.addEventListener("click", async () => {
+      const url = refreshPreview();
+      await copyText(url);
+      status.textContent = "Link copiado";
+    });
+    copyIframeBtn.addEventListener("click", async () => {
+      const url = refreshPreview();
+      await copyText(makeIframeSnippet(url, 760));
+      status.textContent = "Iframe copiado";
+    });
+
+    libraryList.addEventListener("click", async (event) => {
+      const button = event.target.closest("button");
+      const item = event.target.closest(".example-item");
+      if (!button || !item) return;
+
+      const slug = item.dataset.slug;
+      const example = getExample(slug);
+      const action = button.dataset.action;
+
+      if (action === "load") {
+        loadExample(example);
+      } else if (action === "open") {
+        const url = makePlayUrl(example || state);
+        window.open(url, "_blank", "noopener,noreferrer");
+      } else if (action === "copy") {
+        const url = makePlayUrl(example || state);
+        await copyText(url);
+        status.textContent = `Link copiado: ${slug}`;
+      } else if (action === "delete") {
+        deleteExample(slug);
+        renderLibrary();
+        status.textContent = `Borrado: ${slug}`;
+      }
+    });
+
+    loadExample(state);
+    renderLibrary();
+  </script>
+</body>
+</html>
