@@ -1,5 +1,9 @@
 name: Build and Deploy JupyterLite
 
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
 on:
   push:
     branches:
@@ -49,7 +53,7 @@ jobs:
           cp repl/index.html _output/repl/index.html
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./_output
 
@@ -63,9 +67,15 @@ jobs:
 
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
 
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Retry deploy to GitHub Pages
+        id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
